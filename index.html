@@ -74,6 +74,8 @@ select option{background:var(--surf)}
 .tips li{font-size:13px;color:var(--mu);padding-left:16px;position:relative;line-height:1.5}
 .tips li::before{content:'\203A';position:absolute;left:0;color:var(--acc);font-weight:700}
 .ptag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,201,167,.1);border:1px solid rgba(0,201,167,.2);color:var(--acc3);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500}
+.map-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(212,255,0,.08);border:1px solid rgba(212,255,0,.2);color:var(--acc);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500;text-decoration:none;margin-top:10px;transition:background .2s}
+.map-btn:hover{background:rgba(212,255,0,.18)}
 .credit{font-size:10px;color:var(--mu);opacity:.5;margin-top:12px}
 footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:var(--mu);font-size:13px;line-height:1.6}
 </style>
@@ -186,6 +188,15 @@ async function go(){
   }
 }
 
+function iNatUrl(pestName) {
+  // Convert pest name to iNaturalist search URL
+  var slug = pestName.toLowerCase()
+    .replace(/[^a-z0-9 ]/g, '')
+    .trim()
+    .replace(/\s+/g, '+');
+  return 'https://www.inaturalist.org/taxa/search?q=' + slug + '&view=map';
+}
+
 function render(d){
   hide('spin');
   document.getElementById('rloc').textContent=d.location_display||'Results';
@@ -240,6 +251,7 @@ function render(d){
         '<ul class="tips">'+tips+'</ul>'+
         '<div class="stl">Peak Activity</div>'+
         '<span class="ptag">&#x1F550; '+esc(p.peak_timing||'')+'</span>'+
+      '<br><a class="map-btn" href="'+iNatUrl(p.name)+'" target="_blank" rel="noopener">&#x1F5FA; View Range Map</a>'+
         creditHtml+
       '</div>';
     grid.appendChild(card);
