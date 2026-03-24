@@ -51,14 +51,17 @@ select option{background:var(--surf)}
 .a-ttl{font-weight:600;color:var(--acc2);font-size:14px;margin-bottom:4px}
 .a-txt{color:var(--mu);font-size:13px;line-height:1.5}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.pc{background:var(--surf);border:1px solid var(--bor);border-radius:16px;padding:24px;position:relative;overflow:hidden;opacity:0;transform:translateY(16px);animation:ci .4s ease forwards;transition:transform .2s,border-color .2s,box-shadow .2s}
+.pc{background:var(--surf);border:1px solid var(--bor);border-radius:16px;overflow:hidden;opacity:0;transform:translateY(16px);animation:ci .4s ease forwards;transition:transform .2s,border-color .2s,box-shadow .2s}
 .pc:hover{transform:translateY(-4px);border-color:rgba(212,255,0,.2);box-shadow:0 12px 40px rgba(0,0,0,.3)}
-.pc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.pc.h::before{background:var(--dan)}.pc.m::before{background:var(--war)}.pc.l::before{background:var(--saf)}
+.pc-img{width:100%;height:160px;object-fit:cover;display:block;background:#1c2330}
+.pc-img-placeholder{width:100%;height:160px;background:#1c2330;display:flex;align-items:center;justify-content:center;font-size:48px}
+.pc-top{position:relative}
+.pc-bar{position:absolute;top:0;left:0;right:0;height:4px}
+.pc.h .pc-bar{background:var(--dan)}.pc.m .pc-bar{background:var(--war)}.pc.l .pc-bar{background:var(--saf)}
+.pc-body{padding:20px}
 @keyframes ci{to{opacity:1;transform:translateY(0)}}
 .pc:nth-child(1){animation-delay:.05s}.pc:nth-child(2){animation-delay:.1s}.pc:nth-child(3){animation-delay:.15s}.pc:nth-child(4){animation-delay:.2s}.pc:nth-child(5){animation-delay:.25s}.pc:nth-child(6){animation-delay:.3s}.pc:nth-child(7){animation-delay:.35s}.pc:nth-child(8){animation-delay:.4s}
-.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:12px}
-.pe{font-size:32px;line-height:1}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:12px}
 .sb{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;flex-shrink:0}
 .pc.h .sb{background:rgba(255,71,87,.15);color:var(--dan);border:1px solid rgba(255,71,87,.3)}
 .pc.m .sb{background:rgba(255,165,2,.15);color:var(--war);border:1px solid rgba(255,165,2,.3)}
@@ -71,6 +74,7 @@ select option{background:var(--surf)}
 .tips li{font-size:13px;color:var(--mu);padding-left:16px;position:relative;line-height:1.5}
 .tips li::before{content:'\203A';position:absolute;left:0;color:var(--acc);font-weight:700}
 .ptag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,201,167,.1);border:1px solid rgba(0,201,167,.2);color:var(--acc3);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500}
+.credit{font-size:10px;color:var(--mu);opacity:.5;margin-top:12px}
 footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:var(--mu);font-size:13px;line-height:1.6}
 </style>
 </head>
@@ -139,149 +143,111 @@ footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:va
   <div class="grid" id="grid"></div>
 </div>
 
-<footer>BugWatch uses AI to aggregate regional pest data. Results are informational.<br><span style="opacity:.4;font-size:12px">Powered by Claude &middot; Early Preview</span></footer>
+<footer>BugWatch uses AI to aggregate regional pest data. Results are informational.<br><span style="opacity:.4;font-size:12px">Powered by Claude &middot; Photos via Unsplash &middot; Early Preview</span></footer>
 </div>
 
 <script>
-var EMOJI_MAP = {
-  'Mosquito': '\uD83E\uDD9F',
-  'Tick': '\uD83D\uDD77',
-  'No-See': '\uD83D\uDCA8',
-  'Sand Flea': '\uD83E\uDEB2',
-  'Flea': '\uD83E\uDEB2',
-  'Chigger': '\uD83D\uDD34',
-  'Deer Fly': '\uD83D\uDC1F',
-  'Horse Fly': '\uD83D\uDC1F',
-  'Fly': '\uD83D\uDC1B',
-  'Wasp': '\uD83D\uDC1D',
-  'Hornet': '\uD83D\uDC1D',
-  'Fire Ant': '\uD83D\uDC1C',
-  'Ant': '\uD83D\uDC1C',
-  'Gnat': '\uD83D\uDCA8',
-  'Midge': '\uD83D\uDCA8',
-  'Spider': '\uD83D\uDD77',
-  'Scorpion': '\uD83E\uDD82',
-  'Bee': '\uD83D\uDC1D',
-  'Yellow Jacket': '\uD83D\uDC1D',
-  'Cockroach': '\uD83E\uDEB3',
-  'Moth': '\uD83E\uDD8B',
-  'Beetle': '\uD83D\uDC1E',
-  'Cricket': '\uD83E\uDD97',
-  'Caterpillar': '\uD83D\uDC1B',
-  'Mite': '\uD83D\uDD77'
-};
+function show(id){document.getElementById(id).classList.add('on')}
+function hide(id){document.getElementById(id).classList.remove('on')}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-function getEmoji(name) {
-  if (!name) return '\uD83D\uDC1B';
-  var keys = Object.keys(EMOJI_MAP);
-  for (var i = 0; i < keys.length; i++) {
-    if (name.toLowerCase().indexOf(keys[i].toLowerCase()) !== -1) return EMOJI_MAP[keys[i]];
+async function go(){
+  var loc=document.getElementById('loc').value.trim();
+  var mon=document.getElementById('mon').value;
+  if(!loc){
+    var el=document.getElementById('loc');
+    el.style.borderColor='#ff4757';el.focus();
+    setTimeout(function(){el.style.borderColor=''},2000);return;
   }
-  return '\uD83D\uDC1B';
-}
+  hide('res');hide('err');show('spin');
+  document.getElementById('btn').disabled=true;
 
-function show(id) { document.getElementById(id).classList.add('on'); }
-function hide(id) { document.getElementById(id).classList.remove('on'); }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-async function go() {
-  var loc = document.getElementById('loc').value.trim();
-  var mon = document.getElementById('mon').value;
-  if (!loc) {
-    var el = document.getElementById('loc');
-    el.style.borderColor = '#ff4757';
-    el.focus();
-    setTimeout(function(){ el.style.borderColor = ''; }, 2000);
-    return;
-  }
-
-  hide('res'); hide('err');
-  show('spin');
-  document.getElementById('btn').disabled = true;
-
-  try {
-    var resp = await fetch('/.netlify/functions/pest', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ location: loc, month: mon })
+  try{
+    var resp=await fetch('/.netlify/functions/pest',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({location:loc,month:mon})
     });
-
-    var raw = await resp.text();
-
-    if (!resp.ok) {
-      var errData;
-      try { errData = JSON.parse(raw); } catch(e) { errData = { error: raw }; }
-      throw new Error('Error ' + resp.status + ': ' + String(errData.error || raw).slice(0, 200));
+    var raw=await resp.text();
+    if(!resp.ok){
+      var ed;try{ed=JSON.parse(raw)}catch(e){ed={error:raw}}
+      throw new Error('Error '+resp.status+': '+String(ed.error||raw).slice(0,200));
     }
-
     var result;
-    try { result = JSON.parse(raw); } catch(e) { throw new Error('Could not parse response: ' + raw.slice(0, 200)); }
-
+    try{result=JSON.parse(raw)}catch(e){throw new Error('Could not parse response: '+raw.slice(0,200))}
     render(result);
-
-  } catch(e) {
-    hide('spin');
-    show('err');
-    document.getElementById('errtxt').textContent = e.message || String(e);
-    var d = document.getElementById('dbg');
-    d.style.display = 'block';
-    d.textContent = e.message || String(e);
-  } finally {
-    document.getElementById('btn').disabled = false;
+  }catch(e){
+    hide('spin');show('err');
+    document.getElementById('errtxt').textContent=e.message||String(e);
+    var d=document.getElementById('dbg');
+    d.style.display='block';d.textContent=e.message||String(e);
+  }finally{
+    document.getElementById('btn').disabled=false;
   }
 }
 
-function render(d) {
+function render(d){
   hide('spin');
-  document.getElementById('rloc').textContent = d.location_display || 'Results';
-  var ac = d.activity_level === 'High' ? '#ff4757' : d.activity_level === 'Moderate' ? '#ffa502' : '#2ed573';
-  document.getElementById('rmeta').innerHTML =
-    '<span>&#x1F4C5; ' + esc(d.month || '') + '</span>' +
-    '<span>&#x1F41B; ' + (d.pests ? d.pests.length : 0) + ' pests</span>' +
-    '<span style="color:' + ac + '">&#x25CF; ' + esc(d.activity_level || '') + ' Season</span>';
+  document.getElementById('rloc').textContent=d.location_display||'Results';
+  var ac=d.activity_level==='High'?'#ff4757':d.activity_level==='Moderate'?'#ffa502':'#2ed573';
+  document.getElementById('rmeta').innerHTML=
+    '<span>&#x1F4C5; '+esc(d.month||'')+'</span>'+
+    '<span>&#x1F41B; '+(d.pests?d.pests.length:0)+' pests</span>'+
+    '<span style="color:'+ac+'">&#x25CF; '+esc(d.activity_level||'')+' Season</span>';
 
-  var abar = document.getElementById('abar');
-  if (d.alert && d.alert.active) {
-    document.getElementById('attl').textContent = d.alert.title || '';
-    document.getElementById('atxt').textContent = d.alert.text || '';
+  var abar=document.getElementById('abar');
+  if(d.alert&&d.alert.active){
+    document.getElementById('attl').textContent=d.alert.title||'';
+    document.getElementById('atxt').textContent=d.alert.text||'';
     abar.classList.add('on');
-  } else { abar.classList.remove('on'); }
+  }else{abar.classList.remove('on')}
 
-  var grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  var ord = { High: 0, Medium: 1, Low: 2 };
-  var pests = (d.pests || []).slice().sort(function(a, b) {
-    return (ord[a.severity] !== undefined ? ord[a.severity] : 1) - (ord[b.severity] !== undefined ? ord[b.severity] : 1);
+  var grid=document.getElementById('grid');
+  grid.innerHTML='';
+  var ord={High:0,Medium:1,Low:2};
+  var pests=(d.pests||[]).slice().sort(function(a,b){
+    return(ord[a.severity]!==undefined?ord[a.severity]:1)-(ord[b.severity]!==undefined?ord[b.severity]:1);
   });
 
-  for (var i = 0; i < pests.length; i++) {
-    var p = pests[i];
-    var sev = p.severity || 'Medium';
-    var cls = sev === 'High' ? 'h' : sev === 'Low' ? 'l' : 'm';
-    var em = getEmoji(p.name);
-    var tips = '';
-    if (p.prevention_tips) {
-      for (var j = 0; j < p.prevention_tips.length; j++) {
-        tips += '<li>' + esc(p.prevention_tips[j]) + '</li>';
-      }
+  for(var i=0;i<pests.length;i++){
+    var p=pests[i];
+    var sev=p.severity||'Medium';
+    var cls=sev==='High'?'h':sev==='Low'?'l':'m';
+    var tips='';
+    if(p.prevention_tips){
+      for(var j=0;j<p.prevention_tips.length;j++){tips+='<li>'+esc(p.prevention_tips[j])+'</li>'}
     }
-    var card = document.createElement('div');
-    card.className = 'pc ' + cls;
-    card.innerHTML =
-      '<div class="ph"><span class="pe">' + em + '</span><span class="sb">' + esc(sev) + '</span></div>' +
-      '<div class="pn">' + esc(p.name || '') + '</div>' +
-      '<div class="pcat">' + esc(p.category || '') + '</div>' +
-      '<div class="pd">' + esc(p.description || '') + '</div>' +
-      '<div class="stl">Prevention Tips</div>' +
-      '<ul class="tips">' + tips + '</ul>' +
-      '<div class="stl">Peak Activity</div>' +
-      '<span class="ptag">&#x1F550; ' + esc(p.peak_timing || '') + '</span>';
+    var imgHtml='';
+    if(p.image_url){
+      imgHtml='<img class="pc-img" src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'" loading="lazy">';
+    }else{
+      imgHtml='<div class="pc-img-placeholder">&#x1F41B;</div>';
+    }
+    var creditHtml=p.image_credit?'<div class="credit">Photo: '+esc(p.image_credit)+' / Unsplash</div>':'';
+
+    var card=document.createElement('div');
+    card.className='pc '+cls;
+    card.innerHTML=
+      '<div class="pc-top">'+
+        imgHtml+
+        '<div class="pc-bar"></div>'+
+      '</div>'+
+      '<div class="pc-body">'+
+        '<div class="ph"><div class="pn">'+esc(p.name||'')+'</div><span class="sb">'+esc(sev)+'</span></div>'+
+        '<div class="pcat">'+esc(p.category||'')+'</div>'+
+        '<div class="pd">'+esc(p.description||'')+'</div>'+
+        '<div class="stl">Prevention Tips</div>'+
+        '<ul class="tips">'+tips+'</ul>'+
+        '<div class="stl">Peak Activity</div>'+
+        '<span class="ptag">&#x1F550; '+esc(p.peak_timing||'')+'</span>'+
+        creditHtml+
+      '</div>';
     grid.appendChild(card);
   }
   show('res');
 }
 
-document.getElementById('loc').addEventListener('keydown', function(e){ if(e.key==='Enter') go(); });
+document.getElementById('loc').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
 </script>
 </body>
 </html>
