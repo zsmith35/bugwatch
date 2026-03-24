@@ -28,10 +28,10 @@ exports.handler = async function(event) {
     '  "pests": [',
     '    {',
     '      "name": "Pest name",',
-    '      "search_term": "1-2 word photo search term e.g. mosquito",',
+    '      "search_term": "1-2 word photo search e.g. mosquito",',
     '      "category": "Biting Insect or Stinging Insect or Nuisance Pest or Tick or Arachnid or Flying Pest",',
     '      "severity": "High or Medium or Low",',
-    '      "description": "2-3 sentences about this pest at this location this time of year.",',
+    '      "description": "2-3 sentences about this pest at this location this month.",',
     '      "peak_timing": "When most active",',
     '      "prevention_tips": ["tip 1", "tip 2", "tip 3"]',
     '    }',
@@ -67,19 +67,31 @@ exports.handler = async function(event) {
       };
     }
 
-    var text = claudeData.content.map(function(b) { return b.type === 'text' ? b.text : ''; }).join('');
+    var text = claudeData.content.map(function(b) {
+      return b.type === 'text' ? b.text : '';
+    }).join('');
+
     var match = text.match(/\{[\s\S]*\}/);
     if (!match) {
-      return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'No JSON in response' }) };
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'No JSON in response' })
+      };
     }
 
     var result;
     try { result = JSON.parse(match[0]); } catch(e) {
-      return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'JSON parse failed: ' + e.message }) };
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'JSON parse failed: ' + e.message })
+      };
     }
 
-    var unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
-    result._key_set = !!unsplashKey;
+    var unsplashKey = process.env.UNSPLASH_ACCESS_KEY || '';
+    result.debug_key_set = unsplashKey.length > 0;
+    result.debug_key_prefix = unsplashKey.slice(0, 6);
 
     if (unsplashKey && result.pests && result.pests.length) {
       var imagePromises = result.pests.map(async function(pest) {
@@ -90,14 +102,15 @@ exports.handler = async function(event) {
             { headers: { 'Authorization': 'Client-ID ' + unsplashKey } }
           );
           var imgData = await imgResp.json();
+          pest.debug_img_status = imgResp.status;
           if (imgData.results && imgData.results.length > 0) {
             pest.image_url = imgData.results[0].urls.small;
             pest.image_credit = imgData.results[0].user.name;
           } else {
-            pest._img_debug = 'no results for: ' + q;
+            pest.debug_img_error = JSON.stringify(imgData).slice(0, 150);
           }
         } catch(imgErr) {
-          pest._img_debug = 'error: ' + imgErr.message;
+          pest.debug_img_error = imgErr.message;
         }
         return pest;
       });
