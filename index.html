@@ -61,15 +61,25 @@ select option{background:var(--surf)}
 .pc-body{padding:20px}
 @keyframes ci{to{opacity:1;transform:translateY(0)}}
 .pc:nth-child(1){animation-delay:.05s}.pc:nth-child(2){animation-delay:.1s}.pc:nth-child(3){animation-delay:.15s}.pc:nth-child(4){animation-delay:.2s}.pc:nth-child(5){animation-delay:.25s}.pc:nth-child(6){animation-delay:.3s}.pc:nth-child(7){animation-delay:.35s}.pc:nth-child(8){animation-delay:.4s}
-.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:12px}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:8px;flex-wrap:wrap}
+.badges{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
 .sb{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;flex-shrink:0}
 .pc.h .sb{background:rgba(255,71,87,.15);color:var(--dan);border:1px solid rgba(255,71,87,.3)}
 .pc.m .sb{background:rgba(255,165,2,.15);color:var(--war);border:1px solid rgba(255,165,2,.3)}
 .pc.l .sb{background:rgba(46,213,115,.15);color:var(--saf);border:1px solid rgba(46,213,115,.3)}
+.db{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;flex-shrink:0;white-space:nowrap}
+.db.d1,.db.d2{background:rgba(46,213,115,.12);color:#2ed573;border:1px solid rgba(46,213,115,.3)}
+.db.d3,.db.d4{background:rgba(255,165,2,.12);color:#ffa502;border:1px solid rgba(255,165,2,.3)}
+.db.d5,.db.d6{background:rgba(255,107,53,.12);color:#ff6b35;border:1px solid rgba(255,107,53,.3)}
+.db.d7,.db.d8{background:rgba(255,71,87,.15);color:#ff4757;border:1px solid rgba(255,71,87,.3)}
+.db.d9,.db.d10{background:rgba(180,0,0,.2);color:#ff2222;border:1px solid rgba(180,0,0,.5)}
 .pn{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;line-height:1.3}
 .sci{font-size:11px;color:var(--mu);font-style:italic;margin-bottom:4px;opacity:.8}
-.pcat{font-size:11px;color:var(--mu);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
-.pd{font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:16px}
+.pcat{font-size:11px;color:var(--mu);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.pd{font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:12px}
+.meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.meta-tag{font-size:11px;color:var(--mu);background:var(--bg);padding:3px 8px;border-radius:8px;border:1px solid var(--bor)}
+.meta-tag.warn{color:#ff4757;background:rgba(255,71,87,.1);border-color:rgba(255,71,87,.3)}
 .stl{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);margin-bottom:8px}
 .tips{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
 .tips li{font-size:13px;color:var(--mu);padding-left:16px;position:relative;line-height:1.5}
@@ -77,15 +87,18 @@ select option{background:var(--surf)}
 .ptag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,201,167,.1);border:1px solid rgba(0,201,167,.2);color:var(--acc3);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500}
 .map-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(212,255,0,.08);border:1px solid rgba(212,255,0,.2);color:var(--acc);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500;text-decoration:none;margin-top:10px;transition:background .2s}
 .map-btn:hover{background:rgba(212,255,0,.18)}
-.pain-badge{font-size:10px;font-weight:700;letter-spacing:.5px;padding:4px 10px;border-radius:20px;flex-shrink:0;background:rgba(138,43,226,.15);color:#c084fc;border:1px solid rgba(138,43,226,.3)}
-.pain-badge.p1,.pain-badge.p2{background:rgba(46,213,115,.12);color:#2ed573;border-color:rgba(46,213,115,.3)}
-.pain-badge.p3,.pain-badge.p4{background:rgba(255,165,2,.12);color:#ffa502;border-color:rgba(255,165,2,.3)}
-.pain-badge.p5,.pain-badge.p6{background:rgba(255,107,53,.12);color:#ff6b35;border-color:rgba(255,107,53,.3)}
-.pain-badge.p7,.pain-badge.p8{background:rgba(255,71,87,.15);color:#ff4757;border-color:rgba(255,71,87,.3)}
-.pain-badge.p9,.pain-badge.p10{background:rgba(180,0,0,.2);color:#ff0000;border-color:rgba(180,0,0,.4)}
-.medical-flag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#ff4757;margin-top:8px;font-weight:500}
-.map-btn:hover{background:rgba(212,255,0,.18)}
 .credit{font-size:10px;color:var(--mu);opacity:.4;margin-top:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pain-box{background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pain-box-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu)}
+.pain-box-right{display:flex;align-items:center;gap:8px}
+.pain-score-txt{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700}
+.pain-bar{display:flex;gap:2px;align-items:center}
+.pain-pip{width:16px;height:6px;border-radius:3px;background:var(--bor);transition:background .2s}
+.pain-pip.on-1,.pain-pip.on-2{background:#2ed573}
+.pain-pip.on-3,.pain-pip.on-4{background:#ffa502}
+.pain-pip.on-5,.pain-pip.on-6{background:#ff6b35}
+.pain-pip.on-7,.pain-pip.on-8{background:#ff4757}
+.pain-pip.on-9,.pain-pip.on-10{background:#ff0000}
 footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:var(--mu);font-size:13px;line-height:1.6}
 </style>
 </head>
@@ -96,7 +109,7 @@ footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:va
     <div class="bug">&#x1F41B;</div>
     <span class="logo-txt">STINGSCENE</span>
   </div>
-  <h1>Know what&#39;s <span>biting</span><br>before you go.</h1>
+  <h1>Know what's <span>dangerous</span><br>before you go.</h1>
   <p class="sub">Search any destination to see which insects, plants, snakes, and other natural hazards to watch out for by location and time of year.</p>
 </header>
 
@@ -163,11 +176,11 @@ function hide(id){document.getElementById(id).classList.remove('on')}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 function iNatUrl(pest) {
-  // Use pre-built map URL from API if available
-  if (pest.map_url) return pest.map_url;
-  // Fallback to search
-  var q = (pest.display_name||pest.name).toLowerCase().replace(/[^a-z0-9 ]/g,'').trim().replace(/ +/g,'+');
-  return 'https://www.inaturalist.org/taxa/search?q=' + q + '&view=map';
+  if (pest.taxon_id) {
+    var slug = String(pest.taxon_slug || pest.scientific_name || pest.name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    return 'https://www.inaturalist.org/taxa/' + pest.taxon_id + '-' + slug + '#map-tab';
+  }
+  return 'https://www.inaturalist.org/taxa/search?q=' + encodeURIComponent(pest.name) + '&view=map';
 }
 
 async function go(){
@@ -211,7 +224,7 @@ function render(d){
   var ac=d.activity_level==='High'?'#ff4757':d.activity_level==='Moderate'?'#ffa502':'#2ed573';
   document.getElementById('rmeta').innerHTML=
     '<span>&#x1F4C5; '+esc(d.month||'')+'</span>'+
-    '<span>&#x1F41B; '+(d.pests?d.pests.length:0)+' hazards</span>'+
+    '<span>&#x26A0; '+(d.pests?d.pests.length:0)+' hazards</span>'+
     '<span style="color:'+ac+'">&#x25CF; '+esc(d.activity_level||'')+' Season</span>';
 
   var abar=document.getElementById('abar');
@@ -232,27 +245,47 @@ function render(d){
     var p=pests[i];
     var sev=p.severity||'Medium';
     var cls=sev==='High'?'h':sev==='Low'?'l':'m';
-    var tips='';
-    if(p.prevention_tips){
-      for(var j=0;j<p.prevention_tips.length;j++){tips+='<li>'+esc(p.prevention_tips[j])+'</li>'}
-    }
+
     var imgHtml=p.image_url
       ?'<img class="pc-img" src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'" loading="lazy">'
       :'<div class="pc-img-placeholder">&#x1F41B;</div>';
     var creditHtml=p.image_credit?'<div class="credit">'+esc(p.image_credit)+'</div>':'';
     var sciHtml=p.scientific_name?'<div class="sci">'+esc(p.scientific_name)+'</div>':'';
 
+    var dangerBadge='';
+    if(p.danger_score){
+      dangerBadge='<span class="db d'+p.danger_score+'">&#x26A0; '+p.danger_score+'/10 '+esc(p.danger_label||'')+'</span>';
+    }
+
+    var metaRow='<div class="meta-row">';
+    if(p.danger_type) metaRow+='<span class="meta-tag">'+esc(p.danger_type)+'</span>';
+    if(p.danger_duration) metaRow+='<span class="meta-tag">&#x1F552; '+esc(p.danger_duration)+'</span>';
+    if(p.danger_medical) metaRow+='<span class="meta-tag warn">&#x26A0; Seek medical attention</span>';
+    metaRow+='</div>';
+
+    var tips='';
+    if(p.prevention_tips){
+      for(var j=0;j<p.prevention_tips.length;j++){tips+='<li>'+esc(p.prevention_tips[j])+'</li>'}
+    }
+
     var card=document.createElement('div');
     card.className='pc '+cls;
     card.innerHTML=
       '<div class="pc-top">'+imgHtml+'<div class="pc-bar"></div></div>'+
       '<div class="pc-body">'+
-        '<div class="ph"><div class="pn">'+esc(p.display_name||p.name||'')+'</div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0">'+(p.pain_score ? '<span class="pain-badge p'+p.pain_score+'">&#x1F4A5; '+p.pain_score+'/10 '+esc(p.pain_label||'')+'</span>' : '')+'<span class="sb">'+esc(sev)+'</span></div></div>'+
+        '<div class="ph"><div class="pn">'+esc(p.name||'')+'</div><div class="badges">'+dangerBadge+'<span class="sb">'+esc(sev)+'</span></div></div>'+
         sciHtml+
         '<div class="pcat">'+esc(p.category||'')+'</div>'+
+        (p.pain_score ? (function(){
+          var pips = '';
+          for(var k=1;k<=10;k++){
+            pips += '<div class="pain-pip'+(k<=p.pain_score?' on-'+p.pain_score:'')+'" title="'+k+'/10"></div>';
+          }
+          return '<div class="pain-box"><span class="pain-box-label">&#x1F525; Pain Index</span><div class="pain-box-right"><div class="pain-bar">'+pips+'</div><span class="pain-score-txt" style="color:'+(p.pain_score<=2?'#2ed573':p.pain_score<=4?'#ffa502':p.pain_score<=6?'#ff6b35':p.pain_score<=8?'#ff4757':'#ff0000')+'">'+p.pain_score+'/10</span><span style="font-size:11px;color:var(--mu)">'+esc(p.pain_label||'')+'</span></div></div>';
+        })() : '')+
         '<div class="pd">'+esc(p.description||'')+'</div>'+
-        '<div class="pd-meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+(p.pain_type ? '<span style="font-size:11px;color:var(--mu);background:var(--bg);padding:3px 8px;border-radius:10px;border:1px solid var(--bor)">'+esc(p.pain_type)+'</span>' : '')+(p.pain_duration ? '<span style="font-size:11px;color:var(--mu);background:var(--bg);padding:3px 8px;border-radius:10px;border:1px solid var(--bor)">&#x1F552; '+esc(p.pain_duration)+'</span>' : '')+(p.pain_medical ? '<span style="font-size:11px;color:#ff4757;background:rgba(255,71,87,.1);padding:3px 8px;border-radius:10px;border:1px solid rgba(255,71,87,.3)">&#x26A0; Seek medical attention</span>' : '')+'</div>'+
-      '<div class="stl">Prevention Tips</div>'+
+        metaRow+
+        '<div class="stl">Prevention Tips</div>'+
         '<ul class="tips">'+tips+'</ul>'+
         '<div class="stl">Peak Activity</div>'+
         '<span class="ptag">&#x1F550; '+esc(p.peak_timing||'')+'</span>'+
