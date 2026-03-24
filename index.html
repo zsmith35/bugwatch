@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BugWatch</title>
+<title>StingScene — Know Before You Go</title>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0d1117;--surf:#161b22;--bor:#2a3441;--acc:#d4ff00;--acc2:#ff6b35;--acc3:#00c9a7;--tx:#e6edf3;--mu:#7d8590;--dan:#ff4757;--war:#ffa502;--saf:#2ed573}
@@ -86,10 +86,10 @@ footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:va
 <header>
   <div class="logo">
     <div class="bug">&#x1F41B;</div>
-    <span class="logo-txt">BUGWATCH</span>
+    <span class="logo-txt">STINGSCENE</span>
   </div>
   <h1>Know what&#39;s <span>biting</span><br>before you go.</h1>
-  <p class="sub">Search any destination to see which bugs and nuisance pests are active by location and time of year.</p>
+  <p class="sub">Search any destination to see which insects, plants, snakes, and other natural hazards to watch out for by location and time of year.</p>
 </header>
 
 <div class="card">
@@ -122,7 +122,7 @@ footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:va
 
 <div class="spin-wrap" id="spin">
   <div class="spinner"></div>
-  <p class="spin-txt">Scanning pest activity...</p>
+  <p class="spin-txt">Scanning regional hazards...</p>
 </div>
 
 <div class="err-wrap" id="err">
@@ -146,7 +146,7 @@ footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:va
   <div class="grid" id="grid"></div>
 </div>
 
-<footer>BugWatch uses AI to aggregate regional pest data. Results are informational.<br><span style="opacity:.4;font-size:12px">Powered by Claude &middot; Photos &amp; data via iNaturalist &middot; Early Preview</span></footer>
+<footer>StingScene uses AI to aggregate regional hazard data including insects, plants, snakes &amp; more. Results are informational.<br><span style="opacity:.4;font-size:12px">Powered by Claude &middot; Photos &amp; data via iNaturalist &middot; Early Preview</span></footer>
 </div>
 
 <script>
@@ -155,14 +155,10 @@ function hide(id){document.getElementById(id).classList.remove('on')}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 function iNatUrl(pest) {
-  // Use taxon ID + slug for direct map tab link if available
-  if (pest.taxon_id) {
-    var slug = pest.taxon_slug || pest.scientific_name || pest.name;
-    slug = String(slug).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    return 'https://www.inaturalist.org/taxa/' + pest.taxon_id + '-' + slug + '#map-tab';
-  }
+  // Use pre-built map URL from API if available
+  if (pest.map_url) return pest.map_url;
   // Fallback to search
-  var q = pest.name.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim().replace(/ +/g,'+');
+  var q = (pest.display_name||pest.name).toLowerCase().replace(/[^a-z0-9 ]/g,'').trim().replace(/ +/g,'+');
   return 'https://www.inaturalist.org/taxa/search?q=' + q + '&view=map';
 }
 
@@ -207,7 +203,7 @@ function render(d){
   var ac=d.activity_level==='High'?'#ff4757':d.activity_level==='Moderate'?'#ffa502':'#2ed573';
   document.getElementById('rmeta').innerHTML=
     '<span>&#x1F4C5; '+esc(d.month||'')+'</span>'+
-    '<span>&#x1F41B; '+(d.pests?d.pests.length:0)+' pests</span>'+
+    '<span>&#x1F41B; '+(d.pests?d.pests.length:0)+' hazards</span>'+
     '<span style="color:'+ac+'">&#x25CF; '+esc(d.activity_level||'')+' Season</span>';
 
   var abar=document.getElementById('abar');
@@ -243,7 +239,7 @@ function render(d){
     card.innerHTML=
       '<div class="pc-top">'+imgHtml+'<div class="pc-bar"></div></div>'+
       '<div class="pc-body">'+
-        '<div class="ph"><div class="pn">'+esc(p.name||'')+'</div><span class="sb">'+esc(sev)+'</span></div>'+
+        '<div class="ph"><div class="pn">'+esc(p.display_name||p.name||'')+'</div><span class="sb">'+esc(sev)+'</span></div>'+
         sciHtml+
         '<div class="pcat">'+esc(p.category||'')+'</div>'+
         '<div class="pd">'+esc(p.description||'')+'</div>'+
