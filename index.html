@@ -51,10 +51,14 @@ select option{background:var(--surf)}
 .a-ttl{font-weight:600;color:var(--acc2);font-size:14px;margin-bottom:4px}
 .a-txt{color:var(--mu);font-size:13px;line-height:1.5}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.section-divider{grid-column:1/-1;display:flex;align-items:center;gap:16px;margin-top:16px;margin-bottom:4px}
+.section-divider-line{flex:1;height:1px;background:var(--bor)}
+.section-divider-label{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;white-space:nowrap;padding:4px 0}
 .pc{background:var(--surf);border:1px solid var(--bor);border-radius:16px;overflow:hidden;opacity:0;transform:translateY(16px);animation:ci .4s ease forwards;transition:transform .2s,border-color .2s,box-shadow .2s}
 .pc:hover{transform:translateY(-4px);border-color:rgba(212,255,0,.2);box-shadow:0 12px 40px rgba(0,0,0,.3)}
-.pc-img{width:100%;height:160px;object-fit:cover;display:block;background:#1c2330}
-.pc-img-placeholder{width:100%;height:160px;background:#1c2330;display:flex;align-items:center;justify-content:center;font-size:48px}
+.pc-img-wrap{width:100%;aspect-ratio:16/9;overflow:hidden;background:#1c2330;position:relative}
+.pc-img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.92) contrast(1.05)}
+.pc-img-placeholder{width:100%;aspect-ratio:16/9;background:#1c2330;display:flex;align-items:center;justify-content:center;font-size:48px}
 .pc-top{position:relative}
 .pc-bar{position:absolute;top:0;left:0;right:0;height:4px}
 .pc.h .pc-bar{background:var(--dan)}.pc.m .pc-bar{background:var(--war)}.pc.l .pc-bar{background:var(--saf)}
@@ -88,17 +92,9 @@ select option{background:var(--surf)}
 .map-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(212,255,0,.08);border:1px solid rgba(212,255,0,.2);color:var(--acc);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500;text-decoration:none;margin-top:10px;transition:background .2s}
 .map-btn:hover{background:rgba(212,255,0,.18)}
 .credit{font-size:10px;color:var(--mu);opacity:.4;margin-top:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pain-box{background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.pain-box-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu)}
-.pain-box-right{display:flex;align-items:center;gap:8px}
-.pain-score-txt{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700}
-.pain-bar{display:flex;gap:2px;align-items:center}
-.pain-pip{width:16px;height:6px;border-radius:3px;background:var(--bor);transition:background .2s}
-.pain-pip.on-1,.pain-pip.on-2{background:#2ed573}
-.pain-pip.on-3,.pain-pip.on-4{background:#ffa502}
-.pain-pip.on-5,.pain-pip.on-6{background:#ff6b35}
-.pain-pip.on-7,.pain-pip.on-8{background:#ff4757}
-.pain-pip.on-9,.pain-pip.on-10{background:#ff0000}
+.pain-box{display:inline-flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:5px 10px;margin-bottom:12px}
+.pain-box-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--mu)}
+.pain-score-txt{font-size:11px;font-weight:700}
 footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:var(--mu);font-size:13px;line-height:1.6}
 </style>
 </head>
@@ -236,18 +232,41 @@ function render(d){
 
   var grid=document.getElementById('grid');
   grid.innerHTML='';
-  var ord={High:0,Medium:1,Low:2};
-  var pests=(d.pests||[]).slice().sort(function(a,b){
-    return(ord[a.severity]!==undefined?ord[a.severity]:1)-(ord[b.severity]!==undefined?ord[b.severity]:1);
+
+  // Group by danger level
+  var DANGER_LEVELS = [
+    { key: 'extreme', label: '&#x2620; Extreme Danger', min: 9 },
+    { key: 'high',    label: '&#x26A0; High Danger',    min: 6 },
+    { key: 'moderate',label: '&#x1F7E1; Moderate',      min: 3 },
+    { key: 'low',     label: '&#x1F7E2; Low',           min: 0 }
+  ];
+
+  var pests = (d.pests || []).slice().sort(function(a,b){
+    return (b.danger_score||0)-(a.danger_score||0);
   });
 
-  for(var i=0;i<pests.length;i++){
+  for(var ci=0;ci<DANGER_LEVELS.length;ci++){
+    var level = DANGER_LEVELS[ci];
+    var nextMin = ci+1 < DANGER_LEVELS.length ? DANGER_LEVELS[ci+1].min : -1;
+    var group = pests.filter(function(p){
+      var s = p.danger_score || 0;
+      return s >= level.min && (nextMin === -1 || s > nextMin);
+    });
+    if(group.length === 0) continue;
+
+    var divider = document.createElement('div');
+    divider.className = 'section-divider';
+    divider.innerHTML = '<div class="section-divider-line"></div><div class="section-divider-label">'+level.label+'</div><div class="section-divider-line"></div>';
+    grid.appendChild(divider);
+
+    for(var i=0;i<group.length;i++){
+      var p=group[i];
     var p=pests[i];
     var sev=p.severity||'Medium';
     var cls=sev==='High'?'h':sev==='Low'?'l':'m';
 
     var imgHtml=p.image_url
-      ?'<img class="pc-img" src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'" loading="lazy">'
+      ?'<div class="pc-img-wrap"><img class="pc-img" src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'" loading="lazy"></div>'
       :'<div class="pc-img-placeholder">&#x1F41B;</div>';
     var creditHtml=p.image_credit?'<div class="credit">'+esc(p.image_credit)+'</div>':'';
     var sciHtml=p.scientific_name?'<div class="sci">'+esc(p.scientific_name)+'</div>':'';
@@ -276,13 +295,7 @@ function render(d){
         '<div class="ph"><div class="pn">'+esc(p.name||'')+'</div><div class="badges">'+dangerBadge+'<span class="sb">'+esc(sev)+'</span></div></div>'+
         sciHtml+
         '<div class="pcat">'+esc(p.category||'')+'</div>'+
-        (p.pain_score ? (function(){
-          var pips = '';
-          for(var k=1;k<=10;k++){
-            pips += '<div class="pain-pip'+(k<=p.pain_score?' on-'+p.pain_score:'')+'" title="'+k+'/10"></div>';
-          }
-          return '<div class="pain-box"><span class="pain-box-label">&#x1F525; Pain Index</span><div class="pain-box-right"><div class="pain-bar">'+pips+'</div><span class="pain-score-txt" style="color:'+(p.pain_score<=2?'#2ed573':p.pain_score<=4?'#ffa502':p.pain_score<=6?'#ff6b35':p.pain_score<=8?'#ff4757':'#ff0000')+'">'+p.pain_score+'/10</span><span style="font-size:11px;color:var(--mu)">'+esc(p.pain_label||'')+'</span></div></div>';
-        })() : '')+
+        (p.pain_score ? '<div class="pain-box"><span class="pain-box-label">&#x1F525; Pain</span><span class="pain-score-txt" style="color:'+(p.pain_score<=2?'#2ed573':p.pain_score<=4?'#ffa502':p.pain_score<=6?'#ff6b35':p.pain_score<=8?'#ff4757':'#ff0000')+'">'+p.pain_score+'/10</span><span style="font-size:11px;color:var(--mu)">'+esc(p.pain_label||'')+'</span></div>' : '')+
         '<div class="pd">'+esc(p.description||'')+'</div>'+
         metaRow+
         '<div class="stl">Prevention Tips</div>'+
@@ -293,6 +306,7 @@ function render(d){
         creditHtml+
       '</div>';
     grid.appendChild(card);
+    }
   }
   show('res');
 }
