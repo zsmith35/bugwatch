@@ -142,6 +142,7 @@ footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:va
   </div>
   <div class="grid" id="grid"></div>
 </div>
+<div id="debuginfo" style="display:none;margin:20px 0;background:#1c2330;border:1px solid #2a3441;border-radius:10px;padding:16px;color:#ffa502;font-size:12px;white-space:pre-wrap;word-break:break-all;line-height:1.5;"></div>
 
 <footer>BugWatch uses AI to aggregate regional pest data. Results are informational.<br><span style="opacity:.4;font-size:12px">Powered by Claude &middot; Photos via Unsplash &middot; Early Preview</span></footer>
 </div>
@@ -245,6 +246,9 @@ function render(d){
     grid.appendChild(card);
   }
   show('res');
+  var dbgInfo = document.getElementById('debuginfo');
+  dbgInfo.style.display = 'block';
+  dbgInfo.textContent = 'key_set: ' + d._key_set + ' | pests with images: ' + (d.pests||[]).filter(function(p){return p.image_url}).length + '/' + (d.pests||[]).length + ' | first pest debug: ' + ((d.pests&&d.pests[0]&&d.pests[0]._img_debug)||'none');
 }
 
 document.getElementById('loc').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
