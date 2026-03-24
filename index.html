@@ -154,9 +154,16 @@ function show(id){document.getElementById(id).classList.add('on')}
 function hide(id){document.getElementById(id).classList.remove('on')}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-function iNatUrl(pestName) {
-  var slug = pestName.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim().replace(/ +/g,'+');
-  return 'https://www.inaturalist.org/taxa/search?q=' + slug + '&view=map';
+function iNatUrl(pest) {
+  // Use taxon ID + slug for direct map tab link if available
+  if (pest.taxon_id) {
+    var slug = pest.taxon_slug || pest.scientific_name || pest.name;
+    slug = String(slug).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return 'https://www.inaturalist.org/taxa/' + pest.taxon_id + '-' + slug + '#map-tab';
+  }
+  // Fallback to search
+  var q = pest.name.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim().replace(/ +/g,'+');
+  return 'https://www.inaturalist.org/taxa/search?q=' + q + '&view=map';
 }
 
 async function go(){
@@ -244,7 +251,7 @@ function render(d){
         '<ul class="tips">'+tips+'</ul>'+
         '<div class="stl">Peak Activity</div>'+
         '<span class="ptag">&#x1F550; '+esc(p.peak_timing||'')+'</span>'+
-        '<br><a class="map-btn" href="'+iNatUrl(p.name)+'" target="_blank" rel="noopener">&#x1F5FA; View Range Map</a>'+
+        '<br><a class="map-btn" href="'+iNatUrl(p)+'" target="_blank" rel="noopener">&#x1F5FA; View Range Map</a>'+
         creditHtml+
       '</div>';
     grid.appendChild(card);
