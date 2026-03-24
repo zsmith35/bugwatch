@@ -235,10 +235,10 @@ function render(d){
 
   // Group by danger level
   var DANGER_LEVELS = [
-    { key: 'extreme', label: '&#x2620; Extreme Danger', min: 9 },
-    { key: 'high',    label: '&#x26A0; High Danger',    min: 6 },
-    { key: 'moderate',label: '&#x1F7E1; Moderate',      min: 3 },
-    { key: 'low',     label: '&#x1F7E2; Low',           min: 0 }
+    { label: 'EXTREME DANGER', color: '#ff0000', min: 9, max: 10 },
+    { label: 'HIGH DANGER',    color: '#ff4757', min: 6, max: 8  },
+    { label: 'MODERATE',       color: '#ffa502', min: 3, max: 5  },
+    { label: 'LOW',            color: '#2ed573', min: 0, max: 2  }
   ];
 
   var pests = (d.pests || []).slice().sort(function(a,b){
@@ -247,16 +247,18 @@ function render(d){
 
   for(var ci=0;ci<DANGER_LEVELS.length;ci++){
     var level = DANGER_LEVELS[ci];
-    var nextMin = ci+1 < DANGER_LEVELS.length ? DANGER_LEVELS[ci+1].min : -1;
     var group = pests.filter(function(p){
-      var s = p.danger_score || 0;
-      return s >= level.min && (nextMin === -1 || s > nextMin);
+      var s = p.danger_score !== undefined ? p.danger_score : 0;
+      return s >= level.min && s <= level.max;
     });
     if(group.length === 0) continue;
 
     var divider = document.createElement('div');
     divider.className = 'section-divider';
-    divider.innerHTML = '<div class="section-divider-line"></div><div class="section-divider-label">'+level.label+'</div><div class="section-divider-line"></div>';
+    divider.innerHTML =
+      '<div class="section-divider-line" style="background:'+level.color+';opacity:.4"></div>' +
+      '<div class="section-divider-label" style="color:'+level.color+'">'+level.label+'</div>' +
+      '<div class="section-divider-line" style="background:'+level.color+';opacity:.4"></div>';
     grid.appendChild(divider);
 
     for(var i=0;i<group.length;i++){
