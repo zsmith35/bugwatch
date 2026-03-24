@@ -3,61 +3,48 @@ exports.handler = async function(event) {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  let body;
-  try {
-    body = JSON.parse(event.body);
-  } catch(e) {
+  var body;
+  try { body = JSON.parse(event.body); } catch(e) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
 
-  const location = body.location || '';
-  const month = body.month || 'March';
-
+  var location = body.location || '';
+  var month = body.month || 'March';
   if (!location.trim()) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Location is required' }) };
   }
 
-  const lines = [
+  var prompt = [
     'You are an expert entomologist and pest control specialist.',
-    'The user wants to know about pest and bug activity at: ' + location,
-    'for the month of: ' + month,
-    'If the input looks like a US zip code (5 digits), resolve it to the correct city and state.',
+    'Location: ' + location + '. Month: ' + month + '.',
+    'If this is a US zip code resolve it to city and state first.',
     '',
-    'Return ONLY a valid JSON object with no extra text, explanation, or markdown formatting.',
-    'The JSON must use double quotes and match this exact structure:',
+    'Return ONLY a raw JSON object, no markdown, no explanation.',
     '{',
-    '"location_display": "Readable location name (City, State or Park Name)",',
-    '"month": "' + month + '",',
-    '"activity_level": "High or Moderate or Low",',
-    '"alert": {',
-    '  "active": false,',
-    '  "title": "",',
-    '  "text": ""',
-    '},',
-    '"pests": [',
-    '  {',
-    '    "name": "Common name of pest",',
-    '    "category": "One of: Biting Insect, Stinging Insect, Nuisance Pest, Tick or Arachnid, Flying Pest",',
-    '    "emoji": "A single relevant emoji character",',
-    '    "severity": "High or Medium or Low",',
-    '    "description": "2-3 sentence description specific to this location and time of year.",',
-    '    "peak_timing": "When they are most active this month",',
-    '    "prevention_tips": ["tip one", "tip two", "tip three"]',
-    '  }',
-    ']',
+    '  "location_display": "City, State",',
+    '  "month": "' + month + '",',
+    '  "activity_level": "High or Moderate or Low",',
+    '  "alert": { "active": false, "title": "", "text": "" },',
+    '  "pests": [',
+    '    {',
+    '      "name": "Pest name",',
+    '      "search_term": "1-2 word photo search e.g. mosquito",',
+    '      "category": "Biting Insect or Stinging Insect or Nuisance Pest or Tick or Arachnid or Flying Pest",',
+    '      "severity": "High or Medium or Low",',
+    '      "description": "2-3 sentences about this pest at this location this month.",',
+    '      "peak_timing": "When most active",',
+    '      "prevention_tips": ["tip 1", "tip 2", "tip 3"]',
+    '    }',
+    '  ]',
     '}',
     '',
-    'Rules:',
-    '- Include 4 to 8 pests that are genuinely present in this region during ' + month,
-    '- Include lesser-known but impactful pests like sand fleas, no-see-ums, chiggers, deer flies, biting midges',
-    '- Set alert.active to true and fill in title and text if there is a noteworthy pest health risk',
-    '- ONLY output the JSON object. Nothing before it. Nothing after it.'
-  ];
-
-  const prompt = lines.join('\n');
+    'Include 4-8 pests relevant to ' + location + ' in ' + month + '.',
+    'Include lesser-known ones: sand fleas, no-see-ums, chiggers, deer flies where applicable.',
+    'ONLY output the JSON object.'
+  ].join('\n');
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    var claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,30 +58,69 @@ exports.handler = async function(event) {
       })
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
+    var claudeData = await claudeResp.json();
+    if (!claudeResp.ok) {
       return {
-        statusCode: response.status,
+        statusCode: claudeResp.status,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: data.error || 'API error' })
+        body: JSON.stringify({ error: claudeData.error || 'Claude API error' })
       };
     }
 
-    const text = data.content.map(b => b.type === 'text' ? b.text : '').join('');
-    const match = text.match(/\{[\s\S]*\}/);
+    var text = claudeData.content.map(function(b) {
+      return b.type === 'text' ? b.text : '';
+    }).join('');
+
+    var match = text.match(/\{[\s\S]*\}/);
     if (!match) {
       return {
         statusCode: 500,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'No JSON in model response', raw: text.slice(0, 300) })
+        body: JSON.stringify({ error: 'No JSON in response' })
       };
+    }
+
+    var result;
+    try { result = JSON.parse(match[0]); } catch(e) {
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'JSON parse failed: ' + e.message })
+      };
+    }
+
+    var unsplashKey = process.env.UNSPLASH_ACCESS_KEY || '';
+    result.debug_key_set = unsplashKey.length > 0;
+    result.debug_key_prefix = unsplashKey.slice(0, 6);
+
+    if (unsplashKey && result.pests && result.pests.length) {
+      var imagePromises = result.pests.map(async function(pest) {
+        try {
+          var q = encodeURIComponent((pest.search_term || pest.name) + ' insect');
+          var imgResp = await fetch(
+            'https://api.unsplash.com/search/photos?query=' + q + '&per_page=1&orientation=landscape',
+            { headers: { 'Authorization': 'Client-ID ' + unsplashKey } }
+          );
+          var imgData = await imgResp.json();
+          pest.debug_img_status = imgResp.status;
+          if (imgData.results && imgData.results.length > 0) {
+            pest.image_url = imgData.results[0].urls.small;
+            pest.image_credit = imgData.results[0].user.name;
+          } else {
+            pest.debug_img_error = JSON.stringify(imgData).slice(0, 150);
+          }
+        } catch(imgErr) {
+          pest.debug_img_error = imgErr.message;
+        }
+        return pest;
+      });
+      result.pests = await Promise.all(imagePromises);
     }
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: match[0]
+      body: JSON.stringify(result)
     };
 
   } catch(e) {
