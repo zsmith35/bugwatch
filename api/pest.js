@@ -182,6 +182,126 @@ export default async function handler(req, res) {
     'yellow sac spider': { id: 126285, slug: 'cheiracanthium' }
   };
 
+  var PAIN_INDEX = {
+    'alligator': { score: 9, label: 'Extreme', type: 'bite', duration: 'permanent', medical: true },
+    'american alligator': { score: 9, label: 'Extreme', type: 'bite', duration: 'permanent', medical: true },
+    'american dog tick': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: true },
+    'ant': { score: 2, label: 'Mild', type: 'sting', duration: 'minutes', medical: false },
+    'ants': { score: 2, label: 'Mild', type: 'sting', duration: 'minutes', medical: false },
+    'bald-faced hornet': { score: 5, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'bed bug': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'bed bugs': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'bee': { score: 4, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'biting midge': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'biting midges': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'black flies': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'black fly': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'black widow': { score: 8, label: 'Severe', type: 'venom', duration: 'hours', medical: true },
+    'black-legged tick': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: true },
+    'box jellyfish': { score: 10, label: 'Extreme', type: 'venom', duration: 'hours', medical: true },
+    'brown recluse': { score: 7, label: 'Intense', type: 'venom', duration: 'weeks', medical: true },
+    'bullet ant': { score: 10, label: 'Extreme', type: 'sting', duration: 'hours', medical: true },
+    'bumble bee': { score: 4, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'cactus': { score: 2, label: 'Mild', type: 'puncture', duration: 'hours', medical: false },
+    'carpenter ant': { score: 2, label: 'Mild', type: 'bite', duration: 'minutes', medical: false },
+    'carpenter bee': { score: 3, label: 'Mild', type: 'sting', duration: 'minutes', medical: false },
+    'caterpillar': { score: 3, label: 'Mild', type: 'sting', duration: 'hours', medical: false },
+    'caterpillars': { score: 3, label: 'Mild', type: 'sting', duration: 'hours', medical: false },
+    'centipede': { score: 4, label: 'Moderate', type: 'bite', duration: 'hours', medical: false },
+    'centipedes': { score: 4, label: 'Moderate', type: 'bite', duration: 'hours', medical: false },
+    'chigger': { score: 2, label: 'Mild', type: 'bite', duration: 'days', medical: false },
+    'chiggers': { score: 2, label: 'Mild', type: 'bite', duration: 'days', medical: false },
+    'cicada killer': { score: 4, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'copperhead': { score: 5, label: 'Moderate', type: 'venom', duration: 'days', medical: true },
+    'coral snake': { score: 9, label: 'Extreme', type: 'venom', duration: 'hours', medical: true },
+    'cottonmouth': { score: 7, label: 'Intense', type: 'venom', duration: 'days', medical: true },
+    'cow parsnip': { score: 5, label: 'Moderate', type: 'contact', duration: 'days', medical: false },
+    'crocodile': { score: 10, label: 'Extreme', type: 'bite', duration: 'permanent', medical: true },
+    'deer flies': { score: 3, label: 'Mild', type: 'bite', duration: 'minutes', medical: false },
+    'deer fly': { score: 3, label: 'Mild', type: 'bite', duration: 'minutes', medical: false },
+    'deer tick': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: true },
+    'eastern coral snake': { score: 9, label: 'Extreme', type: 'venom', duration: 'hours', medical: true },
+    'eastern diamondback rattlesnake': { score: 9, label: 'Extreme', type: 'venom', duration: 'days', medical: true },
+    'feral pig': { score: 8, label: 'Severe', type: 'bite', duration: 'permanent', medical: true },
+    'fire ant': { score: 3, label: 'Mild', type: 'sting', duration: 'minutes', medical: false },
+    'fire ants': { score: 3, label: 'Mild', type: 'sting', duration: 'minutes', medical: false },
+    'fire coral': { score: 4, label: 'Moderate', type: 'contact', duration: 'hours', medical: false },
+    'flea': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'fleas': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'giant hogweed': { score: 8, label: 'Severe', type: 'contact', duration: 'weeks', medical: true },
+    'gila monster': { score: 7, label: 'Intense', type: 'venom', duration: 'hours', medical: true },
+    'gnat': { score: 1, label: 'Minimal', type: 'bite', duration: 'hours', medical: false },
+    'gnats': { score: 1, label: 'Minimal', type: 'bite', duration: 'hours', medical: false },
+    'harvester ant': { score: 6, label: 'Intense', type: 'sting', duration: 'hours', medical: false },
+    'hobo spider': { score: 4, label: 'Moderate', type: 'bite', duration: 'hours', medical: false },
+    'honey bee': { score: 4, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'hornet': { score: 5, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'hornets': { score: 5, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'horse flies': { score: 4, label: 'Moderate', type: 'bite', duration: 'minutes', medical: false },
+    'horse fly': { score: 4, label: 'Moderate', type: 'bite', duration: 'minutes', medical: false },
+    'io moth caterpillar': { score: 5, label: 'Moderate', type: 'sting', duration: 'hours', medical: false },
+    'jellyfish': { score: 4, label: 'Moderate', type: 'sting', duration: 'hours', medical: false },
+    'leech': { score: 1, label: 'Minimal', type: 'bite', duration: 'minutes', medical: false },
+    'leeches': { score: 1, label: 'Minimal', type: 'bite', duration: 'minutes', medical: false },
+    'lionfish': { score: 6, label: 'Intense', type: 'sting', duration: 'hours', medical: true },
+    'lone star tick': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: true },
+    'man o war': { score: 8, label: 'Severe', type: 'sting', duration: 'hours', medical: true },
+    'manchineel': { score: 9, label: 'Extreme', type: 'contact', duration: 'days', medical: true },
+    'mite': { score: 1, label: 'Minimal', type: 'bite', duration: 'hours', medical: false },
+    'mites': { score: 1, label: 'Minimal', type: 'bite', duration: 'hours', medical: false },
+    'mosquito': { score: 1, label: 'Minimal', type: 'bite', duration: 'hours', medical: false },
+    'mosquitoes': { score: 1, label: 'Minimal', type: 'bite', duration: 'hours', medical: false },
+    'nettle': { score: 3, label: 'Mild', type: 'contact', duration: 'hours', medical: false },
+    'no-see-um': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'no-see-ums': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'paper wasp': { score: 5, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'poison ivy': { score: 4, label: 'Moderate', type: 'contact', duration: 'weeks', medical: false },
+    'poison oak': { score: 4, label: 'Moderate', type: 'contact', duration: 'weeks', medical: false },
+    'poison sumac': { score: 5, label: 'Moderate', type: 'contact', duration: 'weeks', medical: true },
+    'portuguese man o war': { score: 8, label: 'Severe', type: 'sting', duration: 'hours', medical: true },
+    'prickly pear': { score: 2, label: 'Mild', type: 'puncture', duration: 'hours', medical: false },
+    'puss caterpillar': { score: 8, label: 'Severe', type: 'sting', duration: 'hours', medical: true },
+    'rattlesnake': { score: 8, label: 'Severe', type: 'venom', duration: 'days', medical: true },
+    'rattlesnakes': { score: 8, label: 'Severe', type: 'venom', duration: 'days', medical: true },
+    'red paper wasp': { score: 6, label: 'Intense', type: 'sting', duration: 'minutes', medical: false },
+    'saddleback caterpillar': { score: 6, label: 'Intense', type: 'sting', duration: 'hours', medical: false },
+    'sand flea': { score: 2, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'scabies mite': { score: 3, label: 'Mild', type: 'bite', duration: 'weeks', medical: true },
+    'scorpion': { score: 6, label: 'Intense', type: 'sting', duration: 'hours', medical: true },
+    'scorpions': { score: 6, label: 'Intense', type: 'sting', duration: 'hours', medical: true },
+    'sea lice': { score: 2, label: 'Mild', type: 'sting', duration: 'days', medical: false },
+    'sea urchin': { score: 3, label: 'Mild', type: 'puncture', duration: 'days', medical: false },
+    'sea urchins': { score: 3, label: 'Mild', type: 'puncture', duration: 'days', medical: false },
+    'small bee': { score: 2, label: 'Mild', type: 'sting', duration: 'minutes', medical: false },
+    'snake': { score: 5, label: 'Moderate', type: 'venom', duration: 'hours', medical: true },
+    'snapping turtle': { score: 5, label: 'Moderate', type: 'bite', duration: 'minutes', medical: true },
+    'spider': { score: 3, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'spiders': { score: 3, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'stable fly': { score: 3, label: 'Mild', type: 'bite', duration: 'minutes', medical: false },
+    'stinging nettle': { score: 3, label: 'Mild', type: 'contact', duration: 'hours', medical: false },
+    'stingray': { score: 6, label: 'Intense', type: 'sting', duration: 'hours', medical: true },
+    'stingrays': { score: 6, label: 'Intense', type: 'sting', duration: 'hours', medical: true },
+    'sweat bee': { score: 2, label: 'Mild', type: 'sting', duration: 'minutes', medical: false },
+    'tarantula hawk': { score: 9, label: 'Extreme', type: 'sting', duration: 'minutes', medical: true },
+    'tent caterpillar': { score: 2, label: 'Mild', type: 'contact', duration: 'hours', medical: false },
+    'tick': { score: 1, label: 'Minimal', type: 'bite', duration: 'hours', medical: false },
+    'ticks': { score: 1, label: 'Minimal', type: 'bite', duration: 'hours', medical: false },
+    'timber rattlesnake': { score: 8, label: 'Severe', type: 'venom', duration: 'days', medical: true },
+    'urban digger bee': { score: 2, label: 'Mild', type: 'sting', duration: 'minutes', medical: false },
+    'velvet ant': { score: 7, label: 'Intense', type: 'sting', duration: 'hours', medical: false },
+    'warrior wasp': { score: 10, label: 'Extreme', type: 'sting', duration: 'hours', medical: true },
+    'wasp': { score: 4, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'wasps': { score: 4, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'water moccasin': { score: 7, label: 'Intense', type: 'venom', duration: 'days', medical: true },
+    'western diamondback rattlesnake': { score: 8, label: 'Severe', type: 'venom', duration: 'days', medical: true },
+    'wild boar': { score: 8, label: 'Severe', type: 'bite', duration: 'permanent', medical: true },
+    'wild parsnip': { score: 6, label: 'Intense', type: 'contact', duration: 'weeks', medical: true },
+    'wolf spider': { score: 3, label: 'Mild', type: 'bite', duration: 'hours', medical: false },
+    'yellow jacket': { score: 5, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'yellow jackets': { score: 5, label: 'Moderate', type: 'sting', duration: 'minutes', medical: false },
+    'yellow sac spider': { score: 4, label: 'Moderate', type: 'bite', duration: 'hours', medical: false }
+  };
+
   function getTaxon(name) {
     var lower = name.toLowerCase().trim();
     if (TAXON_MAP[lower]) return TAXON_MAP[lower];
@@ -189,6 +309,18 @@ export default async function handler(req, res) {
     for (var i = 0; i < keys.length; i++) {
       if (lower.indexOf(keys[i]) !== -1 || keys[i].indexOf(lower) !== -1) {
         return TAXON_MAP[keys[i]];
+      }
+    }
+    return null;
+  }
+
+  function getPainRating(name) {
+    var lower = name.toLowerCase().trim();
+    if (PAIN_INDEX[lower]) return PAIN_INDEX[lower];
+    var keys = Object.keys(PAIN_INDEX);
+    for (var i = 0; i < keys.length; i++) {
+      if (lower.indexOf(keys[i]) !== -1 || keys[i].indexOf(lower) !== -1) {
+        return PAIN_INDEX[keys[i]];
       }
     }
     return null;
@@ -306,6 +438,14 @@ export default async function handler(req, res) {
         if (inat.image_url) { item.image_url = inat.image_url; item.image_credit = inat.image_credit; }
         if (inat.scientific_name) { item.scientific_name = inat.scientific_name; }
         if (inat.taxon_id) { item.taxon_id = inat.taxon_id; item.taxon_slug = inat.taxon_slug; }
+      }
+      var pain = getPainRating(item.name);
+      if (pain) {
+        item.pain_score = pain.score;
+        item.pain_label = pain.label;
+        item.pain_type = pain.type;
+        item.pain_duration = pain.duration;
+        item.pain_medical = pain.medical;
       }
       return item;
     }));
