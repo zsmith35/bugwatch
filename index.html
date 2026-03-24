@@ -77,6 +77,14 @@ select option{background:var(--surf)}
 .ptag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,201,167,.1);border:1px solid rgba(0,201,167,.2);color:var(--acc3);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500}
 .map-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(212,255,0,.08);border:1px solid rgba(212,255,0,.2);color:var(--acc);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500;text-decoration:none;margin-top:10px;transition:background .2s}
 .map-btn:hover{background:rgba(212,255,0,.18)}
+.pain-badge{font-size:10px;font-weight:700;letter-spacing:.5px;padding:4px 10px;border-radius:20px;flex-shrink:0;background:rgba(138,43,226,.15);color:#c084fc;border:1px solid rgba(138,43,226,.3)}
+.pain-badge.p1,.pain-badge.p2{background:rgba(46,213,115,.12);color:#2ed573;border-color:rgba(46,213,115,.3)}
+.pain-badge.p3,.pain-badge.p4{background:rgba(255,165,2,.12);color:#ffa502;border-color:rgba(255,165,2,.3)}
+.pain-badge.p5,.pain-badge.p6{background:rgba(255,107,53,.12);color:#ff6b35;border-color:rgba(255,107,53,.3)}
+.pain-badge.p7,.pain-badge.p8{background:rgba(255,71,87,.15);color:#ff4757;border-color:rgba(255,71,87,.3)}
+.pain-badge.p9,.pain-badge.p10{background:rgba(180,0,0,.2);color:#ff0000;border-color:rgba(180,0,0,.4)}
+.medical-flag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#ff4757;margin-top:8px;font-weight:500}
+.map-btn:hover{background:rgba(212,255,0,.18)}
 .credit{font-size:10px;color:var(--mu);opacity:.4;margin-top:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:var(--mu);font-size:13px;line-height:1.6}
 </style>
@@ -239,11 +247,12 @@ function render(d){
     card.innerHTML=
       '<div class="pc-top">'+imgHtml+'<div class="pc-bar"></div></div>'+
       '<div class="pc-body">'+
-        '<div class="ph"><div class="pn">'+esc(p.display_name||p.name||'')+'</div><span class="sb">'+esc(sev)+'</span></div>'+
+        '<div class="ph"><div class="pn">'+esc(p.display_name||p.name||'')+'</div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0">'+(p.pain_score ? '<span class="pain-badge p'+p.pain_score+'">&#x1F4A5; '+p.pain_score+'/10 '+esc(p.pain_label||'')+'</span>' : '')+'<span class="sb">'+esc(sev)+'</span></div></div>'+
         sciHtml+
         '<div class="pcat">'+esc(p.category||'')+'</div>'+
         '<div class="pd">'+esc(p.description||'')+'</div>'+
-        '<div class="stl">Prevention Tips</div>'+
+        '<div class="pd-meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+(p.pain_type ? '<span style="font-size:11px;color:var(--mu);background:var(--bg);padding:3px 8px;border-radius:10px;border:1px solid var(--bor)">'+esc(p.pain_type)+'</span>' : '')+(p.pain_duration ? '<span style="font-size:11px;color:var(--mu);background:var(--bg);padding:3px 8px;border-radius:10px;border:1px solid var(--bor)">&#x1F552; '+esc(p.pain_duration)+'</span>' : '')+(p.pain_medical ? '<span style="font-size:11px;color:#ff4757;background:rgba(255,71,87,.1);padding:3px 8px;border-radius:10px;border:1px solid rgba(255,71,87,.3)">&#x26A0; Seek medical attention</span>' : '')+'</div>'+
+      '<div class="stl">Prevention Tips</div>'+
         '<ul class="tips">'+tips+'</ul>'+
         '<div class="stl">Peak Activity</div>'+
         '<span class="ptag">&#x1F550; '+esc(p.peak_timing||'')+'</span>'+
