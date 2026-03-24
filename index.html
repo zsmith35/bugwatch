@@ -163,7 +163,7 @@ async function go(){
   document.getElementById('btn').disabled=true;
 
   try{
-    var resp=await fetch('/.netlify/functions/pest',{
+    var resp=await fetch('/api/pest',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({location:loc,month:mon})
