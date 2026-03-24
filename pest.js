@@ -3,59 +3,48 @@ exports.handler = async function(event) {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  let body;
+  var body;
   try { body = JSON.parse(event.body); } catch(e) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
 
-  const location = body.location || '';
-  const month = body.month || 'March';
+  var location = body.location || '';
+  var month = body.month || 'March';
   if (!location.trim()) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Location is required' }) };
   }
 
-  const lines = [
+  var prompt = [
     'You are an expert entomologist and pest control specialist.',
-    'The user wants to know about pest and bug activity at: ' + location,
-    'for the month of: ' + month,
-    'If the input looks like a US zip code (5 digits), resolve it to the correct city and state.',
+    'Location: ' + location + '. Month: ' + month + '.',
+    'If this is a US zip code resolve it to city and state first.',
     '',
-    'Return ONLY a valid JSON object with no extra text, explanation, or markdown formatting.',
-    'The JSON must use double quotes and match this exact structure:',
+    'Return ONLY a raw JSON object, no markdown, no explanation.',
     '{',
-    '"location_display": "Readable location name (City, State or Park Name)",',
-    '"month": "' + month + '",',
-    '"activity_level": "High or Moderate or Low",',
-    '"alert": {',
-    '  "active": false,',
-    '  "title": "",',
-    '  "text": ""',
-    '},',
-    '"pests": [',
-    '  {',
-    '    "name": "Common name of pest",',
-    '    "search_term": "simple 1-2 word search term for finding a photo of this pest e.g. mosquito insect",',
-    '    "category": "One of: Biting Insect, Stinging Insect, Nuisance Pest, Tick or Arachnid, Flying Pest",',
-    '    "severity": "High or Medium or Low",',
-    '    "description": "2-3 sentence description specific to this location and time of year.",',
-    '    "peak_timing": "When they are most active this month",',
-    '    "prevention_tips": ["tip one", "tip two", "tip three"]',
-    '  }',
-    ']',
+    '  "location_display": "City, State",',
+    '  "month": "' + month + '",',
+    '  "activity_level": "High or Moderate or Low",',
+    '  "alert": { "active": false, "title": "", "text": "" },',
+    '  "pests": [',
+    '    {',
+    '      "name": "Pest name",',
+    '      "search_term": "1-2 word photo search term e.g. mosquito",',
+    '      "category": "Biting Insect or Stinging Insect or Nuisance Pest or Tick or Arachnid or Flying Pest",',
+    '      "severity": "High or Medium or Low",',
+    '      "description": "2-3 sentences about this pest at this location this time of year.",',
+    '      "peak_timing": "When most active",',
+    '      "prevention_tips": ["tip 1", "tip 2", "tip 3"]',
+    '    }',
+    '  ]',
     '}',
     '',
-    'Rules:',
-    '- Include 4 to 8 pests that are genuinely present in this region during ' + month,
-    '- Include lesser-known but impactful pests like sand fleas, no-see-ums, chiggers, deer flies, biting midges',
-    '- Set alert.active to true and fill in title and text if there is a noteworthy pest health risk',
-    '- ONLY output the JSON object. Nothing before it. Nothing after it.'
-  ];
-
-  const prompt = lines.join('\n');
+    'Include 4-8 pests relevant to ' + location + ' in ' + month + '.',
+    'Include lesser-known ones: sand fleas, no-see-ums, chiggers, deer flies where applicable.',
+    'ONLY output the JSON object.'
+  ].join('\n');
 
   try {
-    // Step 1: Get pest data from Claude
-    const claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
+    var claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -69,42 +58,46 @@ exports.handler = async function(event) {
       })
     });
 
-    const claudeData = await claudeResp.json();
+    var claudeData = await claudeResp.json();
     if (!claudeResp.ok) {
-      return { statusCode: claudeResp.status, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: claudeData.error || 'Claude API error' }) };
+      return {
+        statusCode: claudeResp.status,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: claudeData.error || 'Claude API error' })
+      };
     }
 
-    const text = claudeData.content.map(b => b.type === 'text' ? b.text : '').join('');
-    const match = text.match(/\{[\s\S]*\}/);
+    var text = claudeData.content.map(function(b) { return b.type === 'text' ? b.text : ''; }).join('');
+    var match = text.match(/\{[\s\S]*\}/);
     if (!match) {
-      return { statusCode: 500, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'No JSON in model response' }) };
+      return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'No JSON in response' }) };
     }
 
-    let result;
+    var result;
     try { result = JSON.parse(match[0]); } catch(e) {
-      return { statusCode: 500, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'JSON parse failed: ' + e.message }) };
+      return { statusCode: 500, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'JSON parse failed: ' + e.message }) };
     }
 
-    // Step 2: Fetch Unsplash images for each pest in parallel
-    const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
+    var unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
+    result._key_set = !!unsplashKey;
+
     if (unsplashKey && result.pests && result.pests.length) {
-      const imagePromises = result.pests.map(async function(pest) {
+      var imagePromises = result.pests.map(async function(pest) {
         try {
-          const q = encodeURIComponent((pest.search_term || pest.name) + ' insect macro');
-          const imgResp = await fetch(
+          var q = encodeURIComponent((pest.search_term || pest.name) + ' insect');
+          var imgResp = await fetch(
             'https://api.unsplash.com/search/photos?query=' + q + '&per_page=1&orientation=landscape',
             { headers: { 'Authorization': 'Client-ID ' + unsplashKey } }
           );
-          const imgData = await imgResp.json();
+          var imgData = await imgResp.json();
           if (imgData.results && imgData.results.length > 0) {
             pest.image_url = imgData.results[0].urls.small;
             pest.image_credit = imgData.results[0].user.name;
+          } else {
+            pest._img_debug = 'no results for: ' + q;
           }
-        } catch(e) {
-          // Image fetch failed silently - card will show without image
+        } catch(imgErr) {
+          pest._img_debug = 'error: ' + imgErr.message;
         }
         return pest;
       });
@@ -118,7 +111,10 @@ exports.handler = async function(event) {
     };
 
   } catch(e) {
-    return { statusCode: 500, headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: e.message || 'Unknown error' }) };
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: e.message || 'Unknown error' })
+    };
   }
 };
