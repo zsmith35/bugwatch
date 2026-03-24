@@ -4,15 +4,12 @@ exports.handler = async function(event) {
   }
 
   let body;
-  try {
-    body = JSON.parse(event.body);
-  } catch(e) {
+  try { body = JSON.parse(event.body); } catch(e) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
 
   const location = body.location || '';
   const month = body.month || 'March';
-
   if (!location.trim()) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Location is required' }) };
   }
@@ -37,8 +34,8 @@ exports.handler = async function(event) {
     '"pests": [',
     '  {',
     '    "name": "Common name of pest",',
+    '    "search_term": "simple 1-2 word search term for finding a photo of this pest e.g. mosquito insect",',
     '    "category": "One of: Biting Insect, Stinging Insect, Nuisance Pest, Tick or Arachnid, Flying Pest",',
-    '    "emoji": "A single relevant emoji character",',
     '    "severity": "High or Medium or Low",',
     '    "description": "2-3 sentence description specific to this location and time of year.",',
     '    "peak_timing": "When they are most active this month",',
@@ -57,7 +54,8 @@ exports.handler = async function(event) {
   const prompt = lines.join('\n');
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Step 1: Get pest data from Claude
+    const claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,37 +69,56 @@ exports.handler = async function(event) {
       })
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return {
-        statusCode: response.status,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: data.error || 'API error' })
-      };
+    const claudeData = await claudeResp.json();
+    if (!claudeResp.ok) {
+      return { statusCode: claudeResp.status, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: claudeData.error || 'Claude API error' }) };
     }
 
-    const text = data.content.map(b => b.type === 'text' ? b.text : '').join('');
+    const text = claudeData.content.map(b => b.type === 'text' ? b.text : '').join('');
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) {
-      return {
-        statusCode: 500,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'No JSON in model response', raw: text.slice(0, 300) })
-      };
+      return { statusCode: 500, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'No JSON in model response' }) };
+    }
+
+    let result;
+    try { result = JSON.parse(match[0]); } catch(e) {
+      return { statusCode: 500, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'JSON parse failed: ' + e.message }) };
+    }
+
+    // Step 2: Fetch Unsplash images for each pest in parallel
+    const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
+    if (unsplashKey && result.pests && result.pests.length) {
+      const imagePromises = result.pests.map(async function(pest) {
+        try {
+          const q = encodeURIComponent((pest.search_term || pest.name) + ' insect macro');
+          const imgResp = await fetch(
+            'https://api.unsplash.com/search/photos?query=' + q + '&per_page=1&orientation=landscape',
+            { headers: { 'Authorization': 'Client-ID ' + unsplashKey } }
+          );
+          const imgData = await imgResp.json();
+          if (imgData.results && imgData.results.length > 0) {
+            pest.image_url = imgData.results[0].urls.small;
+            pest.image_credit = imgData.results[0].user.name;
+          }
+        } catch(e) {
+          // Image fetch failed silently - card will show without image
+        }
+        return pest;
+      });
+      result.pests = await Promise.all(imagePromises);
     }
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: match[0]
+      body: JSON.stringify(result)
     };
 
   } catch(e) {
-    return {
-      statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: e.message || 'Unknown error' })
-    };
+    return { statusCode: 500, headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: e.message || 'Unknown error' }) };
   }
 };
