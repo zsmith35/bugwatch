@@ -248,7 +248,7 @@ function render(d){
   show('res');
   var dbgInfo = document.getElementById('debuginfo');
   dbgInfo.style.display = 'block';
-  dbgInfo.textContent = 'key_set: ' + d._key_set + ' | pests with images: ' + (d.pests||[]).filter(function(p){return p.image_url}).length + '/' + (d.pests||[]).length + ' | first pest debug: ' + ((d.pests&&d.pests[0]&&d.pests[0]._img_debug)||'none');
+  dbgInfo.textContent = 'key_set: ' + d.debug_key_set + ' | prefix: ' + (d.debug_key_prefix||'none') + ' | images: ' + (d.pests||[]).filter(function(p){return p.image_url}).length + '/' + (d.pests||[]).length + ' | img_status: ' + ((d.pests&&d.pests[0]&&d.pests[0].debug_img_status)||'?') + ' | img_error: ' + ((d.pests&&d.pests[0]&&d.pests[0].debug_img_error)||'none');
 }
 
 document.getElementById('loc').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
