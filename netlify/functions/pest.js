@@ -14,6 +14,66 @@ exports.handler = async function(event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Location is required' }) };
   }
 
+  // Curated search terms that return accurate Unsplash photos
+  var SEARCH_TERMS = {
+    'mosquito': 'mosquito insect closeup',
+    'tick': 'tick arachnid macro',
+    'deer tick': 'deer tick ixodes macro',
+    'black-legged tick': 'deer tick ixodes macro',
+    'american dog tick': 'dog tick dermacentor macro',
+    'lone star tick': 'lone star tick amblyomma',
+    'no-see-um': 'biting midge ceratopogonidae insect',
+    'biting midge': 'biting midge ceratopogonidae insect',
+    'sand flea': 'sand flea beach insect',
+    'chigger': 'chigger mite trombiculidae macro',
+    'deer fly': 'deer fly chrysops insect',
+    'horse fly': 'horse fly tabanidae insect',
+    'black fly': 'black fly simuliidae insect',
+    'fire ant': 'fire ant solenopsis macro',
+    'ant': 'ant insect macro closeup',
+    'wasp': 'wasp vespula insect macro',
+    'yellow jacket': 'yellow jacket wasp insect',
+    'hornet': 'hornet vespa insect macro',
+    'bee': 'honey bee apis insect flower',
+    'gnat': 'fungus gnat diptera insect',
+    'flea': 'flea siphonaptera insect macro',
+    'bed bug': 'bed bug cimex lectularius macro',
+    'cockroach': 'cockroach blattodea insect macro',
+    'spider': 'spider arachnid macro closeup',
+    'brown recluse': 'brown recluse spider loxosceles',
+    'black widow': 'black widow spider latrodectus',
+    'scorpion': 'scorpion arachnid macro desert',
+    'centipede': 'centipede chilopoda macro',
+    'stink bug': 'stink bug halyomorpha insect',
+    'boxelder bug': 'boxelder bug boisea insect',
+    'moth': 'moth lepidoptera insect macro',
+    'beetle': 'beetle coleoptera insect macro',
+    'cricket': 'cricket gryllus insect macro',
+    'caterpillar': 'caterpillar larva insect macro',
+    'earwig': 'earwig forficula insect macro',
+    'millipede': 'millipede diplopoda macro',
+    'whitefly': 'whitefly aleyrodidae insect plant',
+    'aphid': 'aphid plant lice insect macro',
+    'mite': 'spider mite acari macro',
+    'louse': 'louse pediculus insect macro',
+    'fly': 'fly diptera insect macro'
+  };
+
+  function getSearchTerm(pestName) {
+    var lower = pestName.toLowerCase();
+    // Try exact match first
+    if (SEARCH_TERMS[lower]) return SEARCH_TERMS[lower];
+    // Try partial match
+    var keys = Object.keys(SEARCH_TERMS);
+    for (var i = 0; i < keys.length; i++) {
+      if (lower.indexOf(keys[i]) !== -1 || keys[i].indexOf(lower) !== -1) {
+        return SEARCH_TERMS[keys[i]];
+      }
+    }
+    // Fallback: use pest name + insect macro
+    return pestName + ' insect macro';
+  }
+
   var prompt = [
     'You are an expert entomologist and pest control specialist.',
     'Location: ' + location + '. Month: ' + month + '.',
@@ -28,7 +88,6 @@ exports.handler = async function(event) {
     '  "pests": [',
     '    {',
     '      "name": "Pest name",',
-    '      "search_term": "1-2 word photo search e.g. mosquito",',
     '      "category": "Biting Insect or Stinging Insect or Nuisance Pest or Tick or Arachnid or Flying Pest",',
     '      "severity": "High or Medium or Low",',
     '      "description": "2-3 sentences about this pest at this location this month.",',
@@ -90,27 +149,23 @@ exports.handler = async function(event) {
     }
 
     var unsplashKey = process.env.UNSPLASH_ACCESS_KEY || '';
-    result.debug_key_set = unsplashKey.length > 0;
-    result.debug_key_prefix = unsplashKey.slice(0, 6);
 
     if (unsplashKey && result.pests && result.pests.length) {
       var imagePromises = result.pests.map(async function(pest) {
         try {
-          var q = encodeURIComponent((pest.search_term || pest.name) + ' insect');
+          var searchTerm = getSearchTerm(pest.name);
+          var q = encodeURIComponent(searchTerm);
           var imgResp = await fetch(
             'https://api.unsplash.com/search/photos?query=' + q + '&per_page=1&orientation=landscape',
             { headers: { 'Authorization': 'Client-ID ' + unsplashKey } }
           );
           var imgData = await imgResp.json();
-          pest.debug_img_status = imgResp.status;
           if (imgData.results && imgData.results.length > 0) {
             pest.image_url = imgData.results[0].urls.small;
             pest.image_credit = imgData.results[0].user.name;
-          } else {
-            pest.debug_img_error = JSON.stringify(imgData).slice(0, 150);
           }
         } catch(imgErr) {
-          pest.debug_img_error = imgErr.message;
+          // fail silently, card shows without image
         }
         return pest;
       });
