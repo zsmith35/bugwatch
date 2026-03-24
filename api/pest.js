@@ -40,6 +40,8 @@ export default async function handler(req, res) {
         var taxon = data.results[0];
         var result = {
           scientific_name: taxon.name || null,
+          taxon_id: taxon.id || null,
+          taxon_slug: taxon.slug || null,
           image_url: null,
           image_credit: null
         };
@@ -129,6 +131,10 @@ export default async function handler(req, res) {
           }
           if (inat.scientific_name) {
             pest.scientific_name = inat.scientific_name;
+          }
+          if (inat.taxon_id) {
+            pest.taxon_id = inat.taxon_id;
+            pest.taxon_slug = inat.taxon_slug;
           }
         }
         return pest;
