@@ -14,64 +14,99 @@ exports.handler = async function(event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Location is required' }) };
   }
 
-  // Curated search terms that return accurate Unsplash photos
-  var SEARCH_TERMS = {
-    'mosquito': 'mosquito insect closeup',
-    'tick': 'tick arachnid macro',
-    'deer tick': 'deer tick ixodes macro',
-    'black-legged tick': 'deer tick ixodes macro',
-    'american dog tick': 'dog tick dermacentor macro',
-    'lone star tick': 'lone star tick amblyomma',
-    'no-see-um': 'biting midge ceratopogonidae insect',
-    'biting midge': 'biting midge ceratopogonidae insect',
-    'sand flea': 'sand flea beach insect',
-    'chigger': 'chigger mite trombiculidae macro',
-    'deer fly': 'deer fly chrysops insect',
-    'horse fly': 'horse fly tabanidae insect',
-    'black fly': 'black fly simuliidae insect',
-    'fire ant': 'fire ant solenopsis macro',
-    'ant': 'ant insect macro closeup',
-    'wasp': 'wasp vespula insect macro',
-    'yellow jacket': 'yellow jacket wasp insect',
-    'hornet': 'hornet vespa insect macro',
-    'bee': 'honey bee apis insect flower',
-    'gnat': 'fungus gnat diptera insect',
-    'flea': 'flea siphonaptera insect macro',
-    'bed bug': 'bed bug cimex lectularius macro',
-    'cockroach': 'cockroach blattodea insect macro',
-    'spider': 'spider arachnid macro closeup',
-    'brown recluse': 'brown recluse spider loxosceles',
-    'black widow': 'black widow spider latrodectus',
-    'scorpion': 'scorpion arachnid macro desert',
-    'centipede': 'centipede chilopoda macro',
-    'stink bug': 'stink bug halyomorpha insect',
-    'boxelder bug': 'boxelder bug boisea insect',
-    'moth': 'moth lepidoptera insect macro',
-    'beetle': 'beetle coleoptera insect macro',
-    'cricket': 'cricket gryllus insect macro',
-    'caterpillar': 'caterpillar larva insect macro',
-    'earwig': 'earwig forficula insect macro',
-    'millipede': 'millipede diplopoda macro',
-    'whitefly': 'whitefly aleyrodidae insect plant',
-    'aphid': 'aphid plant lice insect macro',
-    'mite': 'spider mite acari macro',
-    'louse': 'louse pediculus insect macro',
-    'fly': 'fly diptera insect macro'
+  // Curated Wikipedia article titles for accurate pest photos
+  var WIKI_TITLES = {
+    'mosquito': 'Mosquito',
+    'aedes mosquito': 'Aedes aegypti',
+    'tick': 'Tick',
+    'deer tick': 'Ixodes scapularis',
+    'black-legged tick': 'Ixodes scapularis',
+    'american dog tick': 'Dermacentor variabilis',
+    'lone star tick': 'Amblyomma americanum',
+    'brown dog tick': 'Rhipicephalus sanguineus',
+    'no-see-um': 'Ceratopogonidae',
+    'biting midge': 'Ceratopogonidae',
+    'sand flea': 'Tunga penetrans',
+    'beach flea': 'Orchestia gammarellus',
+    'chigger': 'Trombiculidae',
+    'deer fly': 'Chrysops',
+    'horse fly': 'Tabanidae',
+    'black fly': 'Simuliidae',
+    'stable fly': 'Stomoxys calcitrans',
+    'fire ant': 'Solenopsis invicta',
+    'ant': 'Ant',
+    'carpenter ant': 'Camponotus',
+    'wasp': 'Wasp',
+    'yellow jacket': 'Vespula',
+    'hornet': 'Vespa (genus)',
+    'bald-faced hornet': 'Dolichovespula maculata',
+    'honey bee': 'Apis mellifera',
+    'bee': 'Bee',
+    'gnat': 'Fungus gnat',
+    'flea': 'Flea',
+    'cat flea': 'Ctenocephalides felis',
+    'bed bug': 'Cimex lectularius',
+    'cockroach': 'Cockroach',
+    'german cockroach': 'Blattella germanica',
+    'spider': 'Spider',
+    'brown recluse': 'Loxosceles reclusa',
+    'black widow': 'Latrodectus',
+    'wolf spider': 'Wolf spider',
+    'scorpion': 'Scorpion',
+    'centipede': 'Centipede',
+    'millipede': 'Millipede',
+    'stink bug': 'Halyomorpha halys',
+    'boxelder bug': 'Boisea trivittata',
+    'earwig': 'Earwig',
+    'moth': 'Moth',
+    'clothes moth': 'Tineola bisselliella',
+    'beetle': 'Beetle',
+    'japanese beetle': 'Popillia japonica',
+    'cricket': 'Cricket (insect)',
+    'caterpillar': 'Caterpillar',
+    'aphid': 'Aphid',
+    'whitefly': 'Whitefly',
+    'mite': 'Mite',
+    'louse': 'Louse',
+    'head louse': 'Pediculus humanus capitis',
+    'fly': 'Fly'
   };
 
-  function getSearchTerm(pestName) {
+  function getWikiTitle(pestName) {
     var lower = pestName.toLowerCase();
-    // Try exact match first
-    if (SEARCH_TERMS[lower]) return SEARCH_TERMS[lower];
-    // Try partial match
-    var keys = Object.keys(SEARCH_TERMS);
+    if (WIKI_TITLES[lower]) return WIKI_TITLES[lower];
+    var keys = Object.keys(WIKI_TITLES);
     for (var i = 0; i < keys.length; i++) {
       if (lower.indexOf(keys[i]) !== -1 || keys[i].indexOf(lower) !== -1) {
-        return SEARCH_TERMS[keys[i]];
+        return WIKI_TITLES[keys[i]];
       }
     }
-    // Fallback: use pest name + insect macro
-    return pestName + ' insect macro';
+    // Fallback: use pest name directly as Wikipedia title
+    return pestName;
+  }
+
+  async function getWikiImage(pestName) {
+    try {
+      var title = getWikiTitle(pestName);
+      var url = 'https://en.wikipedia.org/w/api.php?action=query&titles=' +
+        encodeURIComponent(title) +
+        '&prop=pageimages&format=json&pithumbsize=500&origin=*';
+      var resp = await fetch(url);
+      var data = await resp.json();
+      var pages = data.query && data.query.pages;
+      if (!pages) return null;
+      var pageId = Object.keys(pages)[0];
+      var page = pages[pageId];
+      if (page && page.thumbnail && page.thumbnail.source) {
+        return {
+          url: page.thumbnail.source,
+          credit: 'Wikipedia / Wikimedia Commons'
+        };
+      }
+      return null;
+    } catch(e) {
+      return null;
+    }
   }
 
   var prompt = [
@@ -148,24 +183,12 @@ exports.handler = async function(event) {
       };
     }
 
-    var unsplashKey = process.env.UNSPLASH_ACCESS_KEY || '';
-
-    if (unsplashKey && result.pests && result.pests.length) {
+    if (result.pests && result.pests.length) {
       var imagePromises = result.pests.map(async function(pest) {
-        try {
-          var searchTerm = getSearchTerm(pest.name);
-          var q = encodeURIComponent(searchTerm);
-          var imgResp = await fetch(
-            'https://api.unsplash.com/search/photos?query=' + q + '&per_page=1&orientation=landscape',
-            { headers: { 'Authorization': 'Client-ID ' + unsplashKey } }
-          );
-          var imgData = await imgResp.json();
-          if (imgData.results && imgData.results.length > 0) {
-            pest.image_url = imgData.results[0].urls.small;
-            pest.image_credit = imgData.results[0].user.name;
-          }
-        } catch(imgErr) {
-          // fail silently, card shows without image
+        var img = await getWikiImage(pest.name);
+        if (img) {
+          pest.image_url = img.url;
+          pest.image_credit = img.credit;
         }
         return pest;
       });
