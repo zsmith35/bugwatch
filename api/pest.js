@@ -11,88 +11,43 @@ export default async function handler(req, res) {
   var location = body.location || '';
   var month = body.month || 'March';
 
-  var WIKI_TITLES = {
-    'mosquito': 'Mosquito',
-    'aedes mosquito': 'Aedes aegypti',
-    'tick': 'Tick',
-    'deer tick': 'Ixodes scapularis',
-    'black-legged tick': 'Ixodes scapularis',
-    'american dog tick': 'Dermacentor variabilis',
-    'lone star tick': 'Amblyomma americanum',
-    'brown dog tick': 'Rhipicephalus sanguineus',
-    'no-see-um': 'Ceratopogonidae',
-    'biting midge': 'Ceratopogonidae',
-    'sand flea': 'Tunga penetrans',
-    'beach flea': 'Orchestia gammarellus',
-    'chigger': 'Trombiculidae',
-    'deer fly': 'Chrysops',
-    'horse fly': 'Tabanidae',
-    'black fly': 'Simuliidae',
-    'stable fly': 'Stomoxys calcitrans',
-    'fire ant': 'Solenopsis invicta',
-    'ant': 'Ant',
-    'carpenter ant': 'Camponotus',
-    'wasp': 'Wasp',
-    'yellow jacket': 'Vespula',
-    'hornet': 'Vespa (genus)',
-    'bald-faced hornet': 'Dolichovespula maculata',
-    'honey bee': 'Apis mellifera',
-    'bee': 'Bee',
-    'gnat': 'Fungus gnat',
-    'flea': 'Flea',
-    'cat flea': 'Ctenocephalides felis',
-    'bed bug': 'Cimex lectularius',
-    'cockroach': 'Cockroach',
-    'german cockroach': 'Blattella germanica',
-    'spider': 'Spider',
-    'brown recluse': 'Loxosceles reclusa',
-    'black widow': 'Latrodectus',
-    'wolf spider': 'Wolf spider',
-    'scorpion': 'Scorpion',
-    'centipede': 'Centipede',
-    'millipede': 'Millipede',
-    'stink bug': 'Halyomorpha halys',
-    'boxelder bug': 'Boisea trivittata',
-    'earwig': 'Earwig',
-    'moth': 'Moth',
-    'beetle': 'Beetle',
-    'japanese beetle': 'Popillia japonica',
-    'cricket': 'Cricket (insect)',
-    'caterpillar': 'Caterpillar',
-    'aphid': 'Aphid',
-    'whitefly': 'Whitefly',
-    'mite': 'Mite',
-    'louse': 'Louse',
-    'head louse': 'Pediculus humanus capitis',
-    'fly': 'Fly'
-  };
-
-  function getWikiTitle(pestName) {
-    var lower = pestName.toLowerCase();
-    if (WIKI_TITLES[lower]) return WIKI_TITLES[lower];
-    var keys = Object.keys(WIKI_TITLES);
-    for (var i = 0; i < keys.length; i++) {
-      if (lower.indexOf(keys[i]) !== -1 || keys[i].indexOf(lower) !== -1) {
-        return WIKI_TITLES[keys[i]];
+  // Resolve zip code to accurate city/state via Zippopotam.us
+  async function resolveZip(input) {
+    var trimmed = input.trim();
+    if (!/^\d{5}$/.test(trimmed)) return trimmed;
+    try {
+      var resp = await fetch('https://api.zippopotam.us/us/' + trimmed);
+      if (!resp.ok) return trimmed;
+      var data = await resp.json();
+      if (data.places && data.places.length > 0) {
+        var place = data.places[0];
+        return place['place name'] + ', ' + place['state abbreviation'];
       }
+      return trimmed;
+    } catch(e) {
+      return trimmed;
     }
-    return pestName;
   }
 
-  async function getWikiImage(pestName) {
+  // Fetch photo and scientific name from iNaturalist
+  async function getINatData(pestName) {
     try {
-      var title = getWikiTitle(pestName);
-      var url = 'https://en.wikipedia.org/w/api.php?action=query&titles=' +
-        encodeURIComponent(title) +
-        '&prop=pageimages&format=json&pithumbsize=500&origin=*';
-      var resp = await fetch(url);
+      var q = encodeURIComponent(pestName);
+      var url = 'https://api.inaturalist.org/v1/taxa?q=' + q + '&per_page=1&rank=species,genus,family';
+      var resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
       var data = await resp.json();
-      var pages = data.query && data.query.pages;
-      if (!pages) return null;
-      var pageId = Object.keys(pages)[0];
-      var page = pages[pageId];
-      if (page && page.thumbnail && page.thumbnail.source) {
-        return { url: page.thumbnail.source, credit: 'Wikipedia / Wikimedia Commons' };
+      if (data.results && data.results.length > 0) {
+        var taxon = data.results[0];
+        var result = {
+          scientific_name: taxon.name || null,
+          image_url: null,
+          image_credit: null
+        };
+        if (taxon.default_photo && taxon.default_photo.medium_url) {
+          result.image_url = taxon.default_photo.medium_url;
+          result.image_credit = taxon.default_photo.attribution || 'iNaturalist';
+        }
+        return result;
       }
       return null;
     } catch(e) {
@@ -100,10 +55,11 @@ export default async function handler(req, res) {
     }
   }
 
+  location = await resolveZip(location);
+
   var prompt = [
     'You are an expert entomologist and pest control specialist.',
     'Location: ' + location + '. Month: ' + month + '.',
-    'If this is a US zip code resolve it to city and state first.',
     '',
     'Return ONLY a raw JSON object, no markdown, no explanation.',
     '{',
@@ -113,7 +69,7 @@ export default async function handler(req, res) {
     '  "alert": { "active": false, "title": "", "text": "" },',
     '  "pests": [',
     '    {',
-    '      "name": "Pest name",',
+    '      "name": "Pest common name",',
     '      "category": "Biting Insect or Stinging Insect or Nuisance Pest or Tick or Arachnid or Flying Pest",',
     '      "severity": "High or Medium or Low",',
     '      "description": "2-3 sentences about this pest at this location this month.",',
@@ -162,16 +118,22 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'JSON parse failed: ' + e.message });
     }
 
+    // Enrich each pest with iNaturalist photo and scientific name
     if (result.pests && result.pests.length) {
-      var imagePromises = result.pests.map(async function(pest) {
-        var img = await getWikiImage(pest.name);
-        if (img) {
-          pest.image_url = img.url;
-          pest.image_credit = img.credit;
+      var enriched = await Promise.all(result.pests.map(async function(pest) {
+        var inat = await getINatData(pest.name);
+        if (inat) {
+          if (inat.image_url) {
+            pest.image_url = inat.image_url;
+            pest.image_credit = inat.image_credit;
+          }
+          if (inat.scientific_name) {
+            pest.scientific_name = inat.scientific_name;
+          }
         }
         return pest;
-      });
-      result.pests = await Promise.all(imagePromises);
+      }));
+      result.pests = enriched;
     }
 
     return res.status(200).json(result);
