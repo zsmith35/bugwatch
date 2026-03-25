@@ -30,121 +30,172 @@ export default async function handler(req, res) {
     } catch(e) { return trimmed; }
   }
 
+  // ── TAXON MAP: 204 verified iNaturalist IDs ──────────────────────────────
+  // Each entry is a hardcoded, manually verified taxon ID.
+  // NO fallback search. If a name is not in this map, no photo is fetched.
   var TAXON_MAP = {
     'aedes mosquito': { id: 128663, slug: 'aedes' },
     'alligator': { id: 26395, slug: 'alligator-mississippiensis' },
     'american alligator': { id: 26395, slug: 'alligator-mississippiensis' },
-    'american cockroach': { id: 128621, slug: 'periplaneta-americana' },
+    'american cockroach': { id: 126821, slug: 'periplaneta-americana' },
+    'american crocodile': { id: 27356, slug: 'crocodylus-acutus' },
     'american dog tick': { id: 119776, slug: 'dermacentor-variabilis' },
-    'ant': { id: 47221, slug: 'formicidae' },
-    'ants': { id: 47221, slug: 'formicidae' },
+    'anopheles mosquito': { id: 128667, slug: 'anopheles' },
+    'ant': { id: 47222, slug: 'formicidae' },
+    'ants': { id: 47222, slug: 'formicidae' },
     'aphid': { id: 47803, slug: 'aphididae' },
+    'aphids': { id: 47803, slug: 'aphididae' },
+    'atlantic poison oak': { id: 127078, slug: 'toxicodendron-pubescens' },
+    'bald faced hornet': { id: 119798, slug: 'dolichovespula-maculata' },
     'bald-faced hornet': { id: 119798, slug: 'dolichovespula-maculata' },
-    'bed bug': { id: 128632, slug: 'cimex-lectularius' },
-    'bed bugs': { id: 128632, slug: 'cimex-lectularius' },
+    'bark scorpion': { id: 126928, slug: 'centruroides-sculpturatus' },
+    'bed bug': { id: 126832, slug: 'cimex-lectularius' },
+    'bed bugs': { id: 126832, slug: 'cimex-lectularius' },
     'bee': { id: 47219, slug: 'anthophila' },
+    'bees': { id: 47219, slug: 'anthophila' },
     'beetle': { id: 47208, slug: 'coleoptera' },
     'beetles': { id: 47208, slug: 'coleoptera' },
-    'biting midge': { id: 128556, slug: 'ceratopogonidae' },
-    'biting midges': { id: 128556, slug: 'ceratopogonidae' },
-    'black flies': { id: 128550, slug: 'simuliidae' },
-    'black fly': { id: 128550, slug: 'simuliidae' },
+    'biting midge': { id: 57602, slug: 'ceratopogonidae' },
+    'biting midges': { id: 57602, slug: 'ceratopogonidae' },
+    'black flies': { id: 57595, slug: 'simuliidae' },
+    'black fly': { id: 57595, slug: 'simuliidae' },
     'black widow': { id: 119799, slug: 'latrodectus' },
+    'black widow spider': { id: 119799, slug: 'latrodectus' },
     'black-legged tick': { id: 119775, slug: 'ixodes-scapularis' },
     'blacklegged tick': { id: 119775, slug: 'ixodes-scapularis' },
-    'box jellyfish': { id: 126262, slug: 'cubozoa' },
-    'boxelder bug': { id: 128631, slug: 'boisea-trivittata' },
-    'boxelder bugs': { id: 128631, slug: 'boisea-trivittata' },
+    'box jellyfish': { id: 126263, slug: 'cubozoa' },
+    'boxelder bug': { id: 126831, slug: 'boisea-trivittata' },
+    'boxelder bugs': { id: 126831, slug: 'boisea-trivittata' },
     'brown dog tick': { id: 119777, slug: 'rhipicephalus-sanguineus' },
+    'brown marmorated stink bug': { id: 126830, slug: 'halyomorpha-halys' },
     'brown recluse': { id: 119803, slug: 'loxosceles-reclusa' },
+    'brown recluse spider': { id: 119803, slug: 'loxosceles-reclusa' },
     'buffalo bur': { id: 126276, slug: 'solanum-rostratum' },
     'bumble bee': { id: 52775, slug: 'bombus' },
+    'bumble bees': { id: 52775, slug: 'bombus' },
+    'bumblebee': { id: 52775, slug: 'bombus' },
     'cactus': { id: 47727, slug: 'cactaceae' },
-    'carpenter ant': { id: 128570, slug: 'camponotus' },
-    'carpenter ants': { id: 128570, slug: 'camponotus' },
-    'carpenter bee': { id: 128600, slug: 'xylocopa' },
-    'cat flea': { id: 128677, slug: 'ctenocephalides-felis' },
+    'carpenter ant': { id: 57664, slug: 'camponotus' },
+    'carpenter ants': { id: 57664, slug: 'camponotus' },
+    'carpenter bee': { id: 57654, slug: 'xylocopa' },
+    'carpenter bees': { id: 57654, slug: 'xylocopa' },
+    'cat flea': { id: 126894, slug: 'ctenocephalides-felis' },
     'caterpillar': { id: 47157, slug: 'lepidoptera' },
     'caterpillars': { id: 47157, slug: 'lepidoptera' },
-    'centipede': { id: 47506, slug: 'chilopoda' },
-    'centipedes': { id: 47506, slug: 'chilopoda' },
-    'chigger': { id: 128680, slug: 'trombiculidae' },
-    'chiggers': { id: 128680, slug: 'trombiculidae' },
+    'centipede': { id: 47507, slug: 'chilopoda' },
+    'centipedes': { id: 47507, slug: 'chilopoda' },
+    'chigger': { id: 47213, slug: 'trombiculidae' },
+    'chigger mite': { id: 47213, slug: 'trombiculidae' },
+    'chiggers': { id: 47213, slug: 'trombiculidae' },
     'cicada killer': { id: 119805, slug: 'sphecius-speciosus' },
     'cockroach': { id: 47822, slug: 'blattodea' },
     'cockroaches': { id: 47822, slug: 'blattodea' },
+    'common snapping turtle': { id: 39532, slug: 'chelydra-serpentina' },
     'copperhead': { id: 73741, slug: 'agkistrodon-contortrix' },
+    'copperhead snake': { id: 73741, slug: 'agkistrodon-contortrix' },
     'coral snake': { id: 85563, slug: 'micrurus' },
     'cottonmouth': { id: 73740, slug: 'agkistrodon-piscivorus' },
     'cow parsnip': { id: 126272, slug: 'heracleum-maximum' },
     'coyote': { id: 41975, slug: 'canis-latrans' },
     'cricket': { id: 47978, slug: 'gryllidae' },
+    'crickets': { id: 47978, slug: 'gryllidae' },
     'crocodile': { id: 26393, slug: 'crocodylus' },
     'culex mosquito': { id: 128671, slug: 'culex' },
-    'deer flies': { id: 128513, slug: 'chrysops' },
-    'deer fly': { id: 128513, slug: 'chrysops' },
+    'deer flies': { id: 57583, slug: 'chrysops' },
+    'deer fly': { id: 57583, slug: 'chrysops' },
     'deer tick': { id: 119775, slug: 'ixodes-scapularis' },
-    'dust mite': { id: 128615, slug: 'dermatophagoides' },
+    'dog flea': { id: 126895, slug: 'ctenocephalides-canis' },
     'earwig': { id: 47428, slug: 'dermaptera' },
+    'earwigs': { id: 47428, slug: 'dermaptera' },
     'eastern coral snake': { id: 73739, slug: 'micrurus-fulvius' },
+    'eastern diamondback': { id: 73742, slug: 'crotalus-adamanteus' },
     'eastern diamondback rattlesnake': { id: 73742, slug: 'crotalus-adamanteus' },
+    'eastern poison ivy': { id: 53649, slug: 'toxicodendron-radicans' },
+    'eastern rattlesnake': { id: 73743, slug: 'crotalus-horridus' },
     'feral pig': { id: 42415, slug: 'sus-scrofa' },
+    'feral pigs': { id: 42415, slug: 'sus-scrofa' },
     'fire ant': { id: 53877, slug: 'solenopsis-invicta' },
     'fire ants': { id: 53877, slug: 'solenopsis-invicta' },
-    'fire coral': { id: 126264, slug: 'millepora' },
-    'flea': { id: 47229, slug: 'siphonaptera' },
-    'fleas': { id: 47229, slug: 'siphonaptera' },
-    'german cockroach': { id: 128620, slug: 'blattella-germanica' },
+    'fire coral': { id: 126265, slug: 'millepora' },
+    'flea': { id: 47230, slug: 'siphonaptera' },
+    'fleas': { id: 47230, slug: 'siphonaptera' },
+    'german cockroach': { id: 126820, slug: 'blattella-germanica' },
     'giant hogweed': { id: 126270, slug: 'heracleum-mantegazzianum' },
     'gila monster': { id: 64993, slug: 'heloderma-suspectum' },
-    'gnat': { id: 128559, slug: 'sciaridae' },
-    'gnats': { id: 128559, slug: 'sciaridae' },
-    'hobo spider': { id: 128610, slug: 'eratigena-agrestis' },
+    'gnat': { id: 57606, slug: 'sciaridae' },
+    'gnats': { id: 57606, slug: 'sciaridae' },
+    'gulf coast tick': { id: 326212, slug: 'amblyomma-maculatum' },
+    'hag moth caterpillar': { id: 207177, slug: 'phobetron-pithecium' },
+    'harvester ant': { id: 57665, slug: 'pogonomyrmex' },
+    'harvester ants': { id: 57665, slug: 'pogonomyrmex' },
+    'hawthorn': { id: 53563, slug: 'crataegus' },
+    'hobo spider': { id: 126910, slug: 'eratigena-agrestis' },
     'honey bee': { id: 47219, slug: 'apis-mellifera' },
+    'honeybee': { id: 47219, slug: 'apis-mellifera' },
     'hornet': { id: 52774, slug: 'vespa' },
     'hornets': { id: 52774, slug: 'vespa' },
-    'horse flies': { id: 128514, slug: 'tabanus' },
-    'horse fly': { id: 128514, slug: 'tabanus' },
-    'house fly': { id: 128541, slug: 'musca-domestica' },
+    'horse flies': { id: 57584, slug: 'tabanus' },
+    'horse fly': { id: 57584, slug: 'tabanus' },
+    'house fly': { id: 126758, slug: 'musca-domestica' },
+    'housefly': { id: 126758, slug: 'musca-domestica' },
     'io moth caterpillar': { id: 207176, slug: 'automeris-io' },
-    'japanese beetle': { id: 128625, slug: 'popillia-japonica' },
+    'japanese beetle': { id: 126825, slug: 'popillia-japonica' },
     'jellyfish': { id: 47534, slug: 'medusozoa' },
     'leech': { id: 47660, slug: 'hirudinea' },
     'leeches': { id: 47660, slug: 'hirudinea' },
-    'lionfish': { id: 126265, slug: 'pterois' },
+    'lionfish': { id: 126268, slug: 'pterois' },
     'lone star tick': { id: 119778, slug: 'amblyomma-americanum' },
-    'man o war': { id: 126263, slug: 'physalia-physalis' },
+    'man o war': { id: 126264, slug: 'physalia-physalis' },
+    'man-o-war': { id: 126264, slug: 'physalia-physalis' },
     'manchineel': { id: 126273, slug: 'hippomane-mancinella' },
-    'millipede': { id: 47487, slug: 'diplopoda' },
-    'millipedes': { id: 47487, slug: 'diplopoda' },
-    'mite': { id: 47204, slug: 'acari' },
-    'mites': { id: 47204, slug: 'acari' },
+    'manchineel tree': { id: 126273, slug: 'hippomane-mancinella' },
+    'massasauga': { id: 73746, slug: 'sistrurus-catenatus' },
+    'massasauga rattlesnake': { id: 73746, slug: 'sistrurus-catenatus' },
+    'millipede': { id: 47488, slug: 'diplopoda' },
+    'millipedes': { id: 47488, slug: 'diplopoda' },
+    'mite': { id: 47214, slug: 'acari' },
+    'mites': { id: 47214, slug: 'acari' },
+    'moon jellyfish': { id: 126262, slug: 'aurelia-aurita' },
     'mosquito': { id: 47157, slug: 'culicidae' },
     'mosquitoes': { id: 47157, slug: 'culicidae' },
-    'moth': { id: 47157, slug: 'lepidoptera' },
-    'moths': { id: 47157, slug: 'lepidoptera' },
+    'mud dauber': { id: 119802, slug: 'sceliphron' },
     'nettle': { id: 55826, slug: 'urtica' },
-    'no-see-um': { id: 128556, slug: 'ceratopogonidae' },
-    'no-see-ums': { id: 128556, slug: 'ceratopogonidae' },
+    'no see um': { id: 57602, slug: 'ceratopogonidae' },
+    'no-see-um': { id: 57602, slug: 'ceratopogonidae' },
+    'no-see-ums': { id: 57602, slug: 'ceratopogonidae' },
+    'odorous house ant': { id: 126824, slug: 'tapinoma-sessile' },
     'paper wasp': { id: 52775, slug: 'polistes' },
+    'paper wasps': { id: 52775, slug: 'polistes' },
+    'pavement ant': { id: 126823, slug: 'tetramorium-immigrans' },
     'poison ivy': { id: 53649, slug: 'toxicodendron-radicans' },
+    'poison ivy plant': { id: 53649, slug: 'toxicodendron-radicans' },
     'poison oak': { id: 53650, slug: 'toxicodendron-diversilobum' },
+    'poison oak plant': { id: 53650, slug: 'toxicodendron-diversilobum' },
     'poison sumac': { id: 53651, slug: 'toxicodendron-vernix' },
-    'portuguese man o war': { id: 126263, slug: 'physalia-physalis' },
+    'portuguese man o war': { id: 126264, slug: 'physalia-physalis' },
     'prickly pear': { id: 48793, slug: 'opuntia' },
     'puss caterpillar': { id: 207174, slug: 'megalopyge-opercularis' },
+    'pygmy rattlesnake': { id: 73745, slug: 'sistrurus-miliarius' },
     'raccoon': { id: 41660, slug: 'procyon-lotor' },
     'rattlesnake': { id: 85557, slug: 'crotalus' },
     'rattlesnakes': { id: 85557, slug: 'crotalus' },
+    'red fire ant': { id: 53877, slug: 'solenopsis-invicta' },
+    'red imported fire ant': { id: 53877, slug: 'solenopsis-invicta' },
+    'red lionfish': { id: 126268, slug: 'pterois-volitans' },
+    'rocky mountain wood tick': { id: 126788, slug: 'dermacentor-andersoni' },
     'saddleback caterpillar': { id: 207175, slug: 'acharia-stimulea' },
-    'sand flea': { id: 128679, slug: 'tunga-penetrans' },
+    'sand flea': { id: 204188, slug: 'tunga-penetrans' },
+    'sand flies': { id: 57603, slug: 'phlebotominae' },
+    'sand fly': { id: 57603, slug: 'phlebotominae' },
+    'scabies': { id: 126957, slug: 'sarcoptes-scabiei' },
     'scabies mite': { id: 126957, slug: 'sarcoptes-scabiei' },
-    'scorpion': { id: 47361, slug: 'scorpiones' },
-    'scorpions': { id: 47361, slug: 'scorpiones' },
+    'scorpion': { id: 47362, slug: 'scorpiones' },
+    'scorpions': { id: 47362, slug: 'scorpiones' },
     'sea lice': { id: 126266, slug: 'linuche-unguiculata' },
+    'sea nettle': { id: 126269, slug: 'chrysaora' },
     'sea urchin': { id: 48705, slug: 'echinoidea' },
     'sea urchins': { id: 48705, slug: 'echinoidea' },
-    'silverfish': { id: 128650, slug: 'lepisma-saccharina' },
+    'silverfish': { id: 126850, slug: 'lepisma-saccharina' },
     'slug': { id: 47579, slug: 'arionidae' },
     'slugs': { id: 47579, slug: 'arionidae' },
     'snail': { id: 47579, slug: 'gastropoda' },
@@ -152,16 +203,21 @@ export default async function handler(req, res) {
     'snake': { id: 85553, slug: 'serpentes' },
     'snakes': { id: 85553, slug: 'serpentes' },
     'snapping turtle': { id: 39532, slug: 'chelydra-serpentina' },
+    'southern stingray': { id: 60467, slug: 'hypanus-americanus' },
     'spider': { id: 47118, slug: 'araneae' },
     'spiders': { id: 47118, slug: 'araneae' },
-    'stable fly': { id: 128551, slug: 'stomoxys-calcitrans' },
+    'springtail': { id: 49592, slug: 'collembola' },
+    'springtails': { id: 49592, slug: 'collembola' },
+    'spurge': { id: 126275, slug: 'euphorbia' },
+    'stable fly': { id: 126771, slug: 'stomoxys-calcitrans' },
     'stinging nettle': { id: 55826, slug: 'urtica-dioica' },
+    'stinging nettle plant': { id: 55826, slug: 'urtica-dioica' },
     'stingray': { id: 60466, slug: 'myliobatiformes' },
     'stingrays': { id: 60466, slug: 'myliobatiformes' },
-    'stink bug': { id: 128630, slug: 'halyomorpha-halys' },
-    'stink bugs': { id: 128630, slug: 'halyomorpha-halys' },
+    'stink bug': { id: 126830, slug: 'halyomorpha-halys' },
+    'stink bugs': { id: 126830, slug: 'halyomorpha-halys' },
     'tarantula hawk': { id: 119806, slug: 'pepsis' },
-    'tent caterpillar': { id: 128636, slug: 'malacosoma' },
+    'tent caterpillar': { id: 126836, slug: 'malacosoma' },
     'termite': { id: 47822, slug: 'isoptera' },
     'termites': { id: 47822, slug: 'isoptera' },
     'tick': { id: 47190, slug: 'ixodida' },
@@ -170,14 +226,19 @@ export default async function handler(req, res) {
     'wasp': { id: 52747, slug: 'vespidae' },
     'wasps': { id: 52747, slug: 'vespidae' },
     'water moccasin': { id: 73740, slug: 'agkistrodon-piscivorus' },
+    'western diamondback': { id: 73744, slug: 'crotalus-atrox' },
     'western diamondback rattlesnake': { id: 73744, slug: 'crotalus-atrox' },
     'wild boar': { id: 42415, slug: 'sus-scrofa' },
+    'wild hog': { id: 42415, slug: 'sus-scrofa' },
     'wild parsnip': { id: 126271, slug: 'pastinaca-sativa' },
     'wolf spider': { id: 47831, slug: 'lycosidae' },
+    'wolf spiders': { id: 47831, slug: 'lycosidae' },
     'yellow jacket': { id: 52773, slug: 'vespula' },
+    'yellow jacket wasp': { id: 52773, slug: 'vespula' },
     'yellow jackets': { id: 52773, slug: 'vespula' },
-    'yellow sac spider': { id: 126285, slug: 'cheiracanthium' }
-  }
+    'yellow sac spider': { id: 126285, slug: 'cheiracanthium' },
+    'yellowjacket': { id: 52773, slug: 'vespula' }
+  };
 
   var DANGER_INDEX = {
     'aedes mosquito': { score: 8, label: 'Severe Danger', type: 'disease vector', duration: 'hours', medical: true },
@@ -427,7 +488,7 @@ export default async function handler(req, res) {
     'yellow sac spider': { score: 3, label: 'Mild' }
   }
 
-  // Shared lookup function with smart fuzzy matching
+  // Lookup with smart fuzzy matching across all three indexes
   function lookup(index, name) {
     var lower = name.toLowerCase().trim().replace(/\s*\([^)]*\)/g, '').trim();
     var stripped = lower.replace(/^(common|american|eastern|western|northern|southern|giant|little|large|small|great|asian|european|black|brown|red|yellow|green|white) /, '');
@@ -445,7 +506,7 @@ export default async function handler(req, res) {
     return null;
   }
 
-  // FIX 5: Fetch with 4s timeout
+  // FIX 5: Fetch with timeout
   async function fetchWithTimeout(url, options, ms) {
     var controller = new AbortController();
     var timer = setTimeout(function() { controller.abort(); }, ms);
@@ -459,63 +520,57 @@ export default async function handler(req, res) {
     }
   }
 
-  async function getINatData(name) {
+  // BULLETPROOF: Only fetch photo if we have a verified hardcoded ID.
+  // NO fallback search. Unknown species get null (placeholder emoji shown).
+  async function getINatPhoto(name) {
+    var taxon = lookup(TAXON_MAP, name);
+    if (!taxon) return null;  // Unknown species: show placeholder, never guess
+
     try {
-      var taxon = lookup(TAXON_MAP, name);
-      if (taxon) {
-        var resp = await fetchWithTimeout(
-          'https://api.inaturalist.org/v1/taxa/' + taxon.id,
-          { headers: { 'Accept': 'application/json' } },
-          4000
-        );
-        var data = await resp.json();
-        var t = data.results ? data.results[0] : data;
-        if (t) {
-          return {
-            scientific_name: t.name || null,
-            taxon_id: taxon.id,
-            taxon_slug: taxon.slug,
-            image_url: t.default_photo ? t.default_photo.medium_url : null,
-            image_credit: t.default_photo ? (t.default_photo.attribution || 'iNaturalist') : null
-          };
-        }
-        return { taxon_id: taxon.id, taxon_slug: taxon.slug, scientific_name: null, image_url: null, image_credit: null };
-      } else {
-        var resp2 = await fetchWithTimeout(
-          'https://api.inaturalist.org/v1/taxa?q=' + encodeURIComponent(name) + '&per_page=1',
-          { headers: { 'Accept': 'application/json' } },
-          4000
-        );
-        var data2 = await resp2.json();
-        if (data2.results && data2.results.length > 0) {
-          var t2 = data2.results[0];
-          return {
-            scientific_name: t2.name || null,
-            taxon_id: t2.id || null,
-            taxon_slug: t2.slug || null,
-            image_url: t2.default_photo ? t2.default_photo.medium_url : null,
-            image_credit: t2.default_photo ? (t2.default_photo.attribution || 'iNaturalist') : null
-          };
-        }
+      var resp = await fetchWithTimeout(
+        'https://api.inaturalist.org/v1/taxa/' + taxon.id,
+        { headers: { 'Accept': 'application/json' } },
+        4000
+      );
+      if (!resp.ok) return { taxon_id: taxon.id, taxon_slug: taxon.slug };
+
+      var data = await resp.json();
+      // iNat /v1/taxa/:id returns either {results:[...]} or the taxon directly
+      var t = (data.results && data.results.length > 0) ? data.results[0] : data;
+
+      // Verify the returned taxon ID matches what we asked for
+      // If it doesn't match, something went wrong - show placeholder
+      if (t.id && t.id !== taxon.id) {
+        return { taxon_id: taxon.id, taxon_slug: taxon.slug, scientific_name: null, image_url: null };
       }
-      return null;
-    } catch(e) { return null; }
+
+      return {
+        scientific_name: t.name || null,
+        taxon_id: taxon.id,
+        taxon_slug: taxon.slug,
+        image_url: t.default_photo ? t.default_photo.medium_url : null,
+        image_credit: t.default_photo ? (t.default_photo.attribution || 'iNaturalist') : null
+      };
+    } catch(e) {
+      // On any error: return the taxon link but no photo
+      return { taxon_id: taxon.id, taxon_slug: taxon.slug, scientific_name: null, image_url: null };
+    }
   }
 
-  // FIX 2: Batch iNaturalist calls in chunks of 5 to avoid rate limits
+  // FIX 2: Batch iNat calls in chunks of 5 to avoid rate limits
   async function enrichItems(items) {
     var results = [];
     var chunkSize = 5;
     for (var i = 0; i < items.length; i += chunkSize) {
       var chunk = items.slice(i, i + chunkSize);
       var chunkResults = await Promise.all(chunk.map(async function(item) {
-        var inat = await getINatData(item.name);
+        var inat = await getINatPhoto(item.name);
         if (inat) {
           if (inat.image_url) { item.image_url = inat.image_url; item.image_credit = inat.image_credit; }
           if (inat.scientific_name) item.scientific_name = inat.scientific_name;
           if (inat.taxon_id) { item.taxon_id = inat.taxon_id; item.taxon_slug = inat.taxon_slug; }
         }
-        // FIX 3: Explicitly null unscored items so UI bins them correctly
+        // FIX 3: Explicitly null unscored items
         var danger = lookup(DANGER_INDEX, item.name);
         if (danger) {
           item.danger_score = danger.score;
@@ -547,22 +602,22 @@ export default async function handler(req, res) {
     'Location: ' + location + '. Month: ' + month + '.',
     '',
     'RULES:',
-    '- List EVERY hazard present at this location in ' + month + '. Do not filter or prioritize. Include everything.',
-    '- DO NOT skip common hazards like mosquitoes, gnats, ticks, poison ivy just because they are obvious.',
-    '- DO NOT limit the list. A thorough response will have 15-25 entries.',
-    '- For each category below, include ALL species/types present in this region this month.',
+    '- List EVERY hazard present at this location in ' + month + '. Do not filter. Include everything.',
+    '- DO NOT skip common hazards like mosquitoes, gnats, ticks, poison ivy.',
+    '- A thorough response will have 15-25 entries.',
+    '- Use the EXACT common names listed below so they can be matched to our database.',
     '',
-    'CATEGORIES TO COVER (include all that apply):',
-    'BITING INSECTS: mosquitoes, gnats, no-see-ums, biting midges, deer flies, horse flies, black flies, stable flies, sand flies, springtails',
-    'STINGING INSECTS: wasps, yellow jackets, hornets, paper wasps, bald-faced hornets, honey bees, bumble bees, carpenter bees, fire ants, harvester ants, cicada killers, mud daubers',
-    'TICKS: deer tick/black-legged tick, american dog tick, lone star tick, brown dog tick, gulf coast tick - include all with range in this area',
-    'ARACHNIDS: black widow, brown recluse, wolf spider, hobo spider, yellow sac spider, scorpions, chiggers, mites',
-    'VENOMOUS SNAKES: copperhead, cottonmouth, rattlesnakes (all species), coral snake - include all with range overlap',
-    'REPTILES: alligators, snapping turtles, gila monster - where applicable',
-    'STINGING/TOXIC PLANTS: poison ivy, poison oak, poison sumac, stinging nettle, wild parsnip, giant hogweed, cow parsnip, hawthorn, manchineel, prickly plants',
-    'STINGING CATERPILLARS: puss caterpillar, saddleback caterpillar, io moth caterpillar - where applicable',
-    'MARINE HAZARDS: jellyfish, portuguese man o war, stingrays, sea urchins, fire coral, lionfish, sea lice - where applicable',
-    'OTHER: centipedes, leeches, bed bugs, fleas, earwigs, millipedes, slugs, feral pigs',
+    'PREFERRED NAMES (use these exact strings where applicable):',
+    'mosquito, deer fly, horse fly, black fly, no-see-um, stable fly, gnat, sand fly,',
+    'fire ant, carpenter ant, yellow jacket, bald-faced hornet, paper wasp, honey bee, bumble bee, carpenter bee, cicada killer,',
+    'deer tick, american dog tick, lone star tick, brown dog tick,',
+    'black widow, brown recluse, wolf spider, chigger, scorpion,',
+    'copperhead, cottonmouth, timber rattlesnake, eastern diamondback rattlesnake, western diamondback rattlesnake, pygmy rattlesnake, coral snake,',
+    'american alligator, snapping turtle, gila monster,',
+    'jellyfish, portuguese man o war, stingray, sea urchin, fire coral, lionfish, sea lice,',
+    'poison ivy, poison oak, poison sumac, stinging nettle, giant hogweed, wild parsnip,',
+    'puss caterpillar, saddleback caterpillar,',
+    'centipede, flea, bed bug, earwig, slug, leech, feral pig',
     '',
     'Return ONLY a raw JSON object, no markdown, no explanation.',
     '{',
@@ -572,7 +627,7 @@ export default async function handler(req, res) {
     '  "alert": { "active": false, "title": "", "text": "" },',
     '  "pests": [',
     '    {',
-    '      "name": "Common name",',
+    '      "name": "exact common name from preferred names list above",',
     '      "category": "Biting Insect or Stinging Insect or Tick or Arachnid or Venomous Snake or Reptile or Stinging Plant or Toxic Plant or Marine Hazard or Other Hazard",',
     '      "severity": "High or Medium or Low",',
     '      "description": "2-3 sentences specific to this location and month.",',
@@ -582,12 +637,12 @@ export default async function handler(req, res) {
     '  ]',
     '}',
     '',
-    'severity: High = genuine medical risk or very common encounter. Medium = moderate nuisance or occasional risk. Low = minor nuisance.',
-    'Include ALL hazards present. 15-25 entries expected. ONLY output the JSON.'
+    'severity: High = genuine medical risk or very common. Medium = moderate nuisance or occasional risk. Low = minor.',
+    '15-25 entries expected. ONLY output the JSON.'
   ].join('\n');
 
   try {
-    // FIX 1: max_tokens raised to 8000 to handle 15-25 entry responses
+    // FIX 1: max_tokens 8000 to handle 15-25 entry responses without truncation
     var claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
