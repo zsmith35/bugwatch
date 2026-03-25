@@ -9,16 +9,16 @@
 :root{--bg:#0d1117;--surf:#161b22;--bor:#2a3441;--acc:#d4ff00;--acc2:#ff6b35;--acc3:#00c9a7;--tx:#e6edf3;--mu:#7d8590;--dan:#ff4757;--war:#ffa502;--saf:#2ed573}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-height:100vh;padding:0 24px}
-.wrap{max-width:900px;margin:0 auto}
-header{text-align:center;padding:48px 0 40px}
+.wrap{max-width:960px;margin:0 auto}
+header{text-align:center;padding:48px 0 36px}
 .logo{display:inline-flex;align-items:center;gap:10px;margin-bottom:20px}
 .bug{width:40px;height:40px;background:var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;animation:pulse 3s ease-in-out infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(212,255,0,.4)}50%{box-shadow:0 0 0 12px rgba(212,255,0,0)}}
 .logo-txt{font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--acc)}
-h1{font-family:'Unbounded',sans-serif;font-size:clamp(28px,6vw,50px);font-weight:900;line-height:1.1;letter-spacing:-2px;margin-bottom:16px}
+h1{font-family:'Unbounded',sans-serif;font-size:clamp(26px,5vw,46px);font-weight:900;line-height:1.1;letter-spacing:-2px;margin-bottom:14px}
 h1 span{color:var(--acc)}
-.sub{font-size:16px;color:var(--mu);font-weight:300;max-width:480px;margin:0 auto;line-height:1.6}
-.card{background:var(--surf);border:1px solid var(--bor);border-radius:20px;padding:28px;margin-bottom:32px}
+.sub{font-size:15px;color:var(--mu);font-weight:300;max-width:500px;margin:0 auto;line-height:1.6}
+.search-card{background:var(--surf);border:1px solid var(--bor);border-radius:20px;padding:28px;margin-bottom:36px}
 .row{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
 @media(max-width:600px){.row{grid-template-columns:1fr}}
 .fg{display:flex;flex-direction:column;gap:8px}
@@ -43,77 +43,85 @@ select option{background:var(--surf)}
 .dbg{display:none;margin-top:16px;background:#1c2330;border:1px solid var(--dan);border-radius:10px;padding:16px;color:var(--war);font-size:12px;white-space:pre-wrap;word-break:break-all;text-align:left;line-height:1.5}
 .res-wrap{display:none;margin-bottom:60px}
 .res-wrap.on{display:block}
-.res-head{margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--bor)}
-.res-loc{font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px}
+.res-head{margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--bor)}
+.res-loc{font-family:'Unbounded',sans-serif;font-size:24px;font-weight:700;margin-bottom:8px}
 .res-meta{color:var(--mu);font-size:14px;display:flex;gap:16px;flex-wrap:wrap}
-.alert-bar{display:none;background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.3);border-radius:12px;padding:16px 20px;margin-bottom:24px;gap:12px;align-items:flex-start}
+.alert-bar{display:none;background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.3);border-radius:12px;padding:16px 20px;margin-bottom:28px;gap:12px;align-items:flex-start}
 .alert-bar.on{display:flex}
 .a-ttl{font-weight:600;color:var(--acc2);font-size:14px;margin-bottom:4px}
 .a-txt{color:var(--mu);font-size:13px;line-height:1.5}
+
+/* Section dividers */
+.threat-section{margin-bottom:40px}
+.threat-header{display:flex;align-items:center;gap:0;margin-bottom:24px}
+.threat-line{flex:1;height:2px}
+.threat-label{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:900;letter-spacing:2px;padding:8px 20px;white-space:nowrap;border-top:2px solid;border-bottom:2px solid}
+.threat-high .threat-line{background:var(--dan)}
+.threat-high .threat-label{color:var(--dan);border-color:var(--dan);background:rgba(255,71,87,.06)}
+.threat-medium .threat-line{background:var(--war)}
+.threat-medium .threat-label{color:var(--war);border-color:var(--war);background:rgba(255,165,2,.06)}
+.threat-low .threat-line{background:var(--saf)}
+.threat-low .threat-label{color:var(--saf);border-color:var(--saf);background:rgba(46,213,115,.06)}
+
+/* Card grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.section-divider{grid-column:1/-1;display:flex;align-items:center;gap:16px;margin-top:16px;margin-bottom:4px}
-.section-divider-line{flex:1;height:1px;background:var(--bor)}
-.section-divider-label{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;white-space:nowrap;padding:4px 0}
-.pc{background:var(--surf);border:1px solid var(--bor);border-radius:16px;overflow:hidden;opacity:0;transform:translateY(16px);animation:ci .4s ease forwards;transition:transform .2s,border-color .2s,box-shadow .2s}
-.pc:hover{transform:translateY(-4px);border-color:rgba(212,255,0,.2);box-shadow:0 12px 40px rgba(0,0,0,.3)}
-.pc-img-wrap{width:100%;aspect-ratio:16/9;overflow:hidden;background:#1c2330;position:relative}
-.pc-img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.92) contrast(1.05)}
-.pc-img-placeholder{width:100%;aspect-ratio:16/9;background:#1c2330;display:flex;align-items:center;justify-content:center;font-size:48px}
-.pc-top{position:relative}
-.pc-bar{position:absolute;top:0;left:0;right:0;height:4px}
-.pc.h .pc-bar{background:var(--dan)}.pc.m .pc-bar{background:var(--war)}.pc.l .pc-bar{background:var(--saf)}
-.pc-body{padding:20px}
+.pc{background:var(--surf);border:1px solid var(--bor);border-radius:16px;overflow:hidden;opacity:0;transform:translateY(12px);animation:ci .35s ease forwards}
+.pc:hover{border-color:rgba(212,255,0,.15);box-shadow:0 8px 32px rgba(0,0,0,.3)}
 @keyframes ci{to{opacity:1;transform:translateY(0)}}
-.pc:nth-child(1){animation-delay:.05s}.pc:nth-child(2){animation-delay:.1s}.pc:nth-child(3){animation-delay:.15s}.pc:nth-child(4){animation-delay:.2s}.pc:nth-child(5){animation-delay:.25s}.pc:nth-child(6){animation-delay:.3s}.pc:nth-child(7){animation-delay:.35s}.pc:nth-child(8){animation-delay:.4s}
-.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:8px;flex-wrap:wrap}
-.badges{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
-.sb{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;flex-shrink:0}
-.pc.h .sb{background:rgba(255,71,87,.15);color:var(--dan);border:1px solid rgba(255,71,87,.3)}
-.pc.m .sb{background:rgba(255,165,2,.15);color:var(--war);border:1px solid rgba(255,165,2,.3)}
-.pc.l .sb{background:rgba(46,213,115,.15);color:var(--saf);border:1px solid rgba(46,213,115,.3)}
-.db{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;flex-shrink:0;white-space:nowrap}
-.db.d1,.db.d2{background:rgba(46,213,115,.12);color:#2ed573;border:1px solid rgba(46,213,115,.3)}
-.db.d3,.db.d4{background:rgba(255,165,2,.12);color:#ffa502;border:1px solid rgba(255,165,2,.3)}
-.db.d5,.db.d6{background:rgba(255,107,53,.12);color:#ff6b35;border:1px solid rgba(255,107,53,.3)}
-.db.d7,.db.d8{background:rgba(255,71,87,.15);color:#ff4757;border:1px solid rgba(255,71,87,.3)}
-.db.d9,.db.d10{background:rgba(180,0,0,.2);color:#ff2222;border:1px solid rgba(180,0,0,.5)}
-.pn{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;line-height:1.3}
-.sci{font-size:11px;color:var(--mu);font-style:italic;margin-bottom:4px;opacity:.8}
-.pcat{font-size:11px;color:var(--mu);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
-.pd{font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:12px}
+
+/* Card image */
+.pc-img-wrap{width:100%;aspect-ratio:16/9;overflow:hidden;background:#1c2330;position:relative}
+.pc-img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.9) contrast(1.05)}
+.pc-no-img{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#161b22,#1c2330);display:flex;align-items:center;justify-content:center;font-size:44px}
+
+/* Card body */
+.pc-body{padding:18px}
+.pc-name{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;line-height:1.3;margin-bottom:4px}
+.pc-sci{font-size:11px;color:var(--mu);font-style:italic;margin-bottom:4px;opacity:.75}
+.pc-cat{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+
+/* Pain index compact */
+.pain-row{display:inline-flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:4px 10px;margin-bottom:12px}
+.pain-lbl{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--mu)}
+.pain-val{font-size:11px;font-weight:700}
+.pain-desc{font-size:11px;color:var(--mu)}
+
+.pc-desc{font-size:13px;color:var(--mu);line-height:1.65;margin-bottom:12px}
+
+/* Meta tags */
 .meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.meta-tag{font-size:11px;color:var(--mu);background:var(--bg);padding:3px 8px;border-radius:8px;border:1px solid var(--bor)}
-.meta-tag.warn{color:#ff4757;background:rgba(255,71,87,.1);border-color:rgba(255,71,87,.3)}
+.meta-tag{font-size:11px;color:var(--mu);background:var(--bg);padding:3px 9px;border-radius:7px;border:1px solid var(--bor)}
+.meta-med{font-size:11px;color:var(--dan);background:rgba(255,71,87,.08);padding:3px 9px;border-radius:7px;border:1px solid rgba(255,71,87,.25);font-weight:500}
+
 .stl{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);margin-bottom:8px}
-.tips{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
-.tips li{font-size:13px;color:var(--mu);padding-left:16px;position:relative;line-height:1.5}
+.tips{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.tips li{font-size:13px;color:var(--mu);padding-left:14px;position:relative;line-height:1.5}
 .tips li::before{content:'\203A';position:absolute;left:0;color:var(--acc);font-weight:700}
-.ptag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,201,167,.1);border:1px solid rgba(0,201,167,.2);color:var(--acc3);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500}
-.map-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(212,255,0,.08);border:1px solid rgba(212,255,0,.2);color:var(--acc);font-size:12px;padding:5px 12px;border-radius:20px;font-weight:500;text-decoration:none;margin-top:10px;transition:background .2s}
-.map-btn:hover{background:rgba(212,255,0,.18)}
-.credit{font-size:10px;color:var(--mu);opacity:.4;margin-top:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pain-box{display:inline-flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:5px 10px;margin-bottom:12px}
-.pain-box-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--mu)}
-.pain-score-txt{font-size:11px;font-weight:700}
+.ptag{display:inline-flex;align-items:center;gap:5px;background:rgba(0,201,167,.08);border:1px solid rgba(0,201,167,.2);color:var(--acc3);font-size:11px;padding:4px 10px;border-radius:16px;font-weight:500}
+.map-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(212,255,0,.06);border:1px solid rgba(212,255,0,.18);color:var(--acc);font-size:11px;padding:4px 10px;border-radius:16px;font-weight:500;text-decoration:none;margin-top:8px;transition:background .2s}
+.map-btn:hover{background:rgba(212,255,0,.14)}
+.credit{font-size:10px;color:var(--mu);opacity:.35;margin-top:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:var(--mu);font-size:13px;line-height:1.6}
 </style>
 </head>
 <body>
 <div class="wrap">
+
 <header>
   <div class="logo">
     <div class="bug">&#x1F41B;</div>
     <span class="logo-txt">STINGSCENE</span>
   </div>
   <h1>Know what's <span>dangerous</span><br>before you go.</h1>
-  <p class="sub">Search any destination to see which insects, plants, snakes, and other natural hazards to watch out for by location and time of year.</p>
+  <p class="sub">Search any destination for an exhaustive list of insects, plants, snakes, and other natural hazards by location and season.</p>
 </header>
 
-<div class="card">
+<div class="search-card">
   <div class="row">
     <div class="fg">
       <label>Location or Zip Code</label>
-      <input type="text" id="loc" placeholder="e.g. 27959, Myrtle Beach, Yellowstone...">
+      <input type="text" id="loc" placeholder="e.g. 30019, Myrtle Beach, Yellowstone...">
     </div>
     <div class="fg">
       <label>Month</label>
@@ -160,10 +168,10 @@ footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:va
       <div class="a-txt" id="atxt"></div>
     </div>
   </div>
-  <div class="grid" id="grid"></div>
+  <div id="sections"></div>
 </div>
 
-<footer>StingScene uses AI to aggregate regional hazard data including insects, plants, snakes &amp; more. Results are informational.<br><span style="opacity:.4;font-size:12px">Powered by Claude &middot; Photos &amp; data via iNaturalist &middot; Early Preview</span></footer>
+<footer>StingScene uses AI to aggregate regional hazard data. Results are informational — always consult local advisories.<br><span style="opacity:.4;font-size:12px">Powered by Claude &middot; Photos &amp; data via iNaturalist &middot; Early Preview</span></footer>
 </div>
 
 <script>
@@ -171,12 +179,12 @@ function show(id){document.getElementById(id).classList.add('on')}
 function hide(id){document.getElementById(id).classList.remove('on')}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-function iNatUrl(pest) {
-  if (pest.taxon_id) {
-    var slug = String(pest.taxon_slug || pest.scientific_name || pest.name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-    return 'https://www.inaturalist.org/taxa/' + pest.taxon_id + '-' + slug + '#map-tab';
+function iNatUrl(p){
+  if(p.taxon_id){
+    var slug=String(p.taxon_slug||p.scientific_name||p.name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    return 'https://www.inaturalist.org/taxa/'+p.taxon_id+'-'+slug+'#map-tab';
   }
-  return 'https://www.inaturalist.org/taxa/search?q=' + encodeURIComponent(pest.name) + '&view=map';
+  return 'https://www.inaturalist.org/taxa/search?q='+encodeURIComponent(p.name)+'&view=map';
 }
 
 async function go(){
@@ -188,132 +196,135 @@ async function go(){
     setTimeout(function(){el.style.borderColor=''},2000);return;
   }
   hide('res');hide('err');show('spin');
+  document.getElementById('spin').querySelector('.spin-txt').textContent='Scanning regional hazards...';
   document.getElementById('btn').disabled=true;
 
+  // FIX 10: Show progress feedback after 5s
+  var slowTimer = setTimeout(function(){
+    var el = document.getElementById('spin').querySelector('.spin-txt');
+    if(el) el.textContent='Still working — fetching photos from iNaturalist...';
+  }, 5000);
+
   try{
-    var resp=await fetch('/api/pest',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({location:loc,month:mon})
-    });
+    var resp=await fetch('/api/pest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:loc,month:mon})});
     var raw=await resp.text();
-    if(!resp.ok){
-      var ed;try{ed=JSON.parse(raw)}catch(e){ed={error:raw}}
-      throw new Error('Error '+resp.status+': '+String(ed.error||raw).slice(0,200));
-    }
-    var result;
-    try{result=JSON.parse(raw)}catch(e){throw new Error('Could not parse response: '+raw.slice(0,200))}
+    if(!resp.ok){var ed;try{ed=JSON.parse(raw)}catch(e){ed={error:raw}}throw new Error('Error '+resp.status+': '+String(ed.error||raw).slice(0,200));}
+    var result;try{result=JSON.parse(raw)}catch(e){throw new Error('Parse error: '+raw.slice(0,200))}
     render(result);
   }catch(e){
     hide('spin');show('err');
+    if(slowTimer) clearTimeout(slowTimer);
     document.getElementById('errtxt').textContent=e.message||String(e);
-    var d=document.getElementById('dbg');
-    d.style.display='block';d.textContent=e.message||String(e);
+    var d=document.getElementById('dbg');d.style.display='block';d.textContent=e.message||String(e);
   }finally{
+    if(slowTimer) clearTimeout(slowTimer);
     document.getElementById('btn').disabled=false;
   }
 }
 
+function buildCard(p, delay){
+  var sev = p.severity||'Medium';
+
+  // Pain color
+  var pc = (!p.pain_score||p.pain_score===null)?'#7d8590':p.pain_score<=2?'#2ed573':p.pain_score<=4?'#ffa502':p.pain_score<=6?'#ff6b35':p.pain_score<=8?'#ff4757':'#ff2222';
+
+  var imgHtml = p.image_url
+    ? '<div class="pc-img-wrap"><img class="pc-img" src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'" loading="lazy"></div>'
+    : '<div class="pc-no-img">&#x1F41B;</div>';
+
+  var sciHtml = p.scientific_name ? '<div class="pc-sci">'+esc(p.scientific_name)+'</div>' : '';
+
+  var painHtml = (p.pain_score !== null && p.pain_score !== undefined)
+    ? '<div class="pain-row"><span class="pain-lbl">Pain</span><span class="pain-val" style="color:'+pc+'">'+p.pain_score+'/10</span><span class="pain-desc">'+esc(p.pain_label||'')+'</span></div>'
+    : '';
+
+  var metaHtml = '<div class="meta-row">';
+  if(p.danger_type) metaHtml += '<span class="meta-tag">'+esc(p.danger_type)+'</span>';
+  if(p.danger_duration) metaHtml += '<span class="meta-tag">'+esc(p.danger_duration)+'</span>';
+  if(p.danger_medical) metaHtml += '<span class="meta-med">&#x26A0; Seek medical attention</span>';
+  metaHtml += '</div>';
+
+  var tips = '';
+  if(p.prevention_tips){for(var j=0;j<p.prevention_tips.length;j++){tips+='<li>'+esc(p.prevention_tips[j])+'</li>';}}
+
+  var creditHtml = p.image_credit ? '<div class="credit">'+esc(p.image_credit)+'</div>' : '';
+
+  var card = document.createElement('div');
+  card.className = 'pc';
+  card.style.animationDelay = (Math.min(delay, 6)*0.06)+'s';
+  card.innerHTML =
+    imgHtml+
+    '<div class="pc-body">'+
+      '<div class="pc-name">'+esc(p.name||'')+'</div>'+
+      sciHtml+
+      '<div class="pc-cat">'+esc(p.category||'')+'</div>'+
+      painHtml+
+      '<div class="pc-desc">'+esc(p.description||'')+'</div>'+
+      metaHtml+
+      '<div class="stl">Prevention Tips</div>'+
+      '<ul class="tips">'+tips+'</ul>'+
+      '<div class="stl">Peak Activity</div>'+
+      '<span class="ptag">&#x1F550; '+esc(p.peak_timing||'')+'</span>'+
+      '<br><a class="map-btn" href="'+iNatUrl(p)+'" target="_blank" rel="noopener">&#x1F5FA; View Range Map</a>'+
+      creditHtml+
+    '</div>';
+  return card;
+}
+
 function render(d){
   hide('spin');
-  document.getElementById('rloc').textContent=d.location_display||'Results';
-  var ac=d.activity_level==='High'?'#ff4757':d.activity_level==='Moderate'?'#ffa502':'#2ed573';
-  document.getElementById('rmeta').innerHTML=
+  document.getElementById('rloc').textContent = d.location_display||'Results';
+  var ac = d.activity_level==='High'?'#ff4757':d.activity_level==='Moderate'?'#ffa502':'#2ed573';
+  document.getElementById('rmeta').innerHTML =
     '<span>&#x1F4C5; '+esc(d.month||'')+'</span>'+
-    '<span>&#x26A0; '+(d.pests?d.pests.length:0)+' hazards</span>'+
+    '<span>&#x26A0; '+(d.pests?d.pests.length:0)+' hazards identified</span>'+
     '<span style="color:'+ac+'">&#x25CF; '+esc(d.activity_level||'')+' Season</span>';
 
   var abar=document.getElementById('abar');
-  if(d.alert&&d.alert.active){
-    document.getElementById('attl').textContent=d.alert.title||'';
-    document.getElementById('atxt').textContent=d.alert.text||'';
-    abar.classList.add('on');
-  }else{abar.classList.remove('on')}
+  if(d.alert&&d.alert.active){document.getElementById('attl').textContent=d.alert.title||'';document.getElementById('atxt').textContent=d.alert.text||'';abar.classList.add('on');}
+  else{abar.classList.remove('on');}
 
-  var grid=document.getElementById('grid');
-  grid.innerHTML='';
+  var sections = document.getElementById('sections');
+  sections.innerHTML = '';
 
-  // Group by danger level
-  var DANGER_LEVELS = [
-    { label: 'EXTREME DANGER', color: '#ff0000', min: 9, max: 10 },
-    { label: 'HIGH DANGER',    color: '#ff4757', min: 6, max: 8  },
-    { label: 'MODERATE',       color: '#ffa502', min: 3, max: 5  },
-    { label: 'LOW',            color: '#2ed573', min: 0, max: 2  }
+  var LEVELS = [
+    { key:'high',   label:'THREAT LEVEL: HIGH',   cls:'threat-high',   min:6, max:10 },
+    { key:'medium', label:'THREAT LEVEL: MEDIUM',  cls:'threat-medium', min:3, max:5  },
+    { key:'low',    label:'THREAT LEVEL: LOW',     cls:'threat-low',    min:0, max:2  }
   ];
 
-  var pests = (d.pests || []).slice().sort(function(a,b){
-    return (b.danger_score||0)-(a.danger_score||0);
-  });
+  var pests = (d.pests||[]).slice().sort(function(a,b){return(b.danger_score||0)-(a.danger_score||0);});
+  var cardIndex = 0;
 
-  for(var ci=0;ci<DANGER_LEVELS.length;ci++){
-    var level = DANGER_LEVELS[ci];
+  for(var li=0;li<LEVELS.length;li++){
+    var level = LEVELS[li];
     var group = pests.filter(function(p){
       var s = p.danger_score !== undefined ? p.danger_score : 0;
       return s >= level.min && s <= level.max;
     });
-    if(group.length === 0) continue;
+    if(group.length===0) continue;
 
-    var divider = document.createElement('div');
-    divider.className = 'section-divider';
-    divider.innerHTML =
-      '<div class="section-divider-line" style="background:'+level.color+';opacity:.4"></div>' +
-      '<div class="section-divider-label" style="color:'+level.color+'">'+level.label+'</div>' +
-      '<div class="section-divider-line" style="background:'+level.color+';opacity:.4"></div>';
-    grid.appendChild(divider);
+    var section = document.createElement('div');
+    section.className = 'threat-section';
 
-    for(var i=0;i<group.length;i++){
-      var p=group[i];
-    var p=pests[i];
-    var sev=p.severity||'Medium';
-    var cls=sev==='High'?'h':sev==='Low'?'l':'m';
+    var header = document.createElement('div');
+    header.className = 'threat-header '+level.cls;
+    header.innerHTML = '<div class="threat-line"></div><div class="threat-label">'+level.label+'</div><div class="threat-line"></div>';
+    section.appendChild(header);
 
-    var imgHtml=p.image_url
-      ?'<div class="pc-img-wrap"><img class="pc-img" src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'" loading="lazy"></div>'
-      :'<div class="pc-img-placeholder">&#x1F41B;</div>';
-    var creditHtml=p.image_credit?'<div class="credit">'+esc(p.image_credit)+'</div>':'';
-    var sciHtml=p.scientific_name?'<div class="sci">'+esc(p.scientific_name)+'</div>':'';
-
-    var dangerBadge='';
-    if(p.danger_score){
-      dangerBadge='<span class="db d'+p.danger_score+'">&#x26A0; '+p.danger_score+'/10 '+esc(p.danger_label||'')+'</span>';
+    var grid = document.createElement('div');
+    grid.className = 'grid';
+    for(var gi=0;gi<group.length;gi++){
+      grid.appendChild(buildCard(group[gi], gi));  // reset index per section
     }
-
-    var metaRow='<div class="meta-row">';
-    if(p.danger_type) metaRow+='<span class="meta-tag">'+esc(p.danger_type)+'</span>';
-    if(p.danger_duration) metaRow+='<span class="meta-tag">&#x1F552; '+esc(p.danger_duration)+'</span>';
-    if(p.danger_medical) metaRow+='<span class="meta-tag warn">&#x26A0; Seek medical attention</span>';
-    metaRow+='</div>';
-
-    var tips='';
-    if(p.prevention_tips){
-      for(var j=0;j<p.prevention_tips.length;j++){tips+='<li>'+esc(p.prevention_tips[j])+'</li>'}
-    }
-
-    var card=document.createElement('div');
-    card.className='pc '+cls;
-    card.innerHTML=
-      '<div class="pc-top">'+imgHtml+'<div class="pc-bar"></div></div>'+
-      '<div class="pc-body">'+
-        '<div class="ph"><div class="pn">'+esc(p.name||'')+'</div><div class="badges">'+dangerBadge+'<span class="sb">'+esc(sev)+'</span></div></div>'+
-        sciHtml+
-        '<div class="pcat">'+esc(p.category||'')+'</div>'+
-        (p.pain_score ? '<div class="pain-box"><span class="pain-box-label">&#x1F525; Pain</span><span class="pain-score-txt" style="color:'+(p.pain_score<=2?'#2ed573':p.pain_score<=4?'#ffa502':p.pain_score<=6?'#ff6b35':p.pain_score<=8?'#ff4757':'#ff0000')+'">'+p.pain_score+'/10</span><span style="font-size:11px;color:var(--mu)">'+esc(p.pain_label||'')+'</span></div>' : '')+
-        '<div class="pd">'+esc(p.description||'')+'</div>'+
-        metaRow+
-        '<div class="stl">Prevention Tips</div>'+
-        '<ul class="tips">'+tips+'</ul>'+
-        '<div class="stl">Peak Activity</div>'+
-        '<span class="ptag">&#x1F550; '+esc(p.peak_timing||'')+'</span>'+
-        '<br><a class="map-btn" href="'+iNatUrl(p)+'" target="_blank" rel="noopener">&#x1F5FA; View Range Map</a>'+
-        creditHtml+
-      '</div>';
-    grid.appendChild(card);
-    }
+    section.appendChild(grid);
+    sections.appendChild(section);
   }
+
   show('res');
 }
 
-document.getElementById('loc').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+document.getElementById('loc').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
 </script>
 </body>
 </html>
