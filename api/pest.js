@@ -15,7 +15,10 @@ export default async function handler(req, res) {
     var trimmed = input.trim();
     if (!/^\d{5}$/.test(trimmed)) return trimmed;
     try {
-      var resp = await fetch('https://api.zippopotam.us/us/' + trimmed);
+      var controller = new AbortController();
+      var timer = setTimeout(function(){ controller.abort(); }, 3000);
+      var resp = await fetch('https://api.zippopotam.us/us/' + trimmed, { signal: controller.signal });
+      clearTimeout(timer);
       if (!resp.ok) return trimmed;
       var data = await resp.json();
       if (data.places && data.places.length > 0) {
@@ -424,24 +427,55 @@ export default async function handler(req, res) {
   };
 
   function lookup(index, name) {
-    var lower = name.toLowerCase().trim();
+    // Clean name: strip parentheticals like "(Culex species)" and lowercase
+    var lower = name.toLowerCase().trim().replace(/\s*\([^)]*\)/g, '').trim();
+    // Also strip descriptors like "common ", "american ", "eastern " for broader matching
+    var stripped = lower.replace(/^(common|american|eastern|western|northern|southern|giant|little|large|small|great|asian|european|black|brown|red|yellow|green|white) /, '');
+
     if (index[lower]) return index[lower];
+    if (index[stripped]) return index[stripped];
+
     var keys = Object.keys(index);
+    // Exact substring match
     for (var i = 0; i < keys.length; i++) {
-      if (lower.indexOf(keys[i]) !== -1 || keys[i].indexOf(lower) !== -1) {
-        return index[keys[i]];
-      }
+      if (lower.indexOf(keys[i]) !== -1 || keys[i].indexOf(lower) !== -1) return index[keys[i]];
+    }
+    // Try stripped name
+    for (var i = 0; i < keys.length; i++) {
+      if (stripped.indexOf(keys[i]) !== -1 || keys[i].indexOf(stripped) !== -1) return index[keys[i]];
+    }
+    // Try first word only (e.g. "mosquito" from "mosquito larvae")
+    var firstWord = stripped.split(' ')[0];
+    if (firstWord.length > 3 && index[firstWord]) return index[firstWord];
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i] === firstWord) return index[keys[i]];
     }
     return null;
+  }
+
+  // FIX 5: Fetch with timeout via AbortController
+  async function fetchWithTimeout(url, options, ms) {
+    var controller = new AbortController();
+    var timer = setTimeout(function() { controller.abort(); }, ms);
+    try {
+      var r = await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+      clearTimeout(timer);
+      return r;
+    } catch(e) {
+      clearTimeout(timer);
+      throw e;
+    }
   }
 
   async function getINatData(name) {
     try {
       var taxon = lookup(TAXON_MAP, name);
       if (taxon) {
-        var resp = await fetch('https://api.inaturalist.org/v1/taxa/' + taxon.id, {
-          headers: { 'Accept': 'application/json' }
-        });
+        var resp = await fetchWithTimeout(
+          'https://api.inaturalist.org/v1/taxa/' + taxon.id,
+          { headers: { 'Accept': 'application/json' } },
+          4000  // 4s timeout per request
+        );
         var data = await resp.json();
         var t = data.results ? data.results[0] : data;
         if (t) {
@@ -455,9 +489,11 @@ export default async function handler(req, res) {
         }
         return { taxon_id: taxon.id, taxon_slug: taxon.slug, scientific_name: null, image_url: null, image_credit: null };
       } else {
-        var resp2 = await fetch('https://api.inaturalist.org/v1/taxa?q=' + encodeURIComponent(name) + '&per_page=1', {
-          headers: { 'Accept': 'application/json' }
-        });
+        var resp2 = await fetchWithTimeout(
+          'https://api.inaturalist.org/v1/taxa?q=' + encodeURIComponent(name) + '&per_page=1',
+          { headers: { 'Accept': 'application/json' } },
+          4000
+        );
         var data2 = await resp2.json();
         if (data2.results && data2.results.length > 0) {
           var t2 = data2.results[0];
@@ -474,26 +510,67 @@ export default async function handler(req, res) {
     } catch(e) { return null; }
   }
 
+  // FIX 2: Batch iNat calls in chunks of 5 to avoid rate limits
+  async function batchInatLookups(items) {
+    var results = [];
+    var chunkSize = 5;
+    for (var i = 0; i < items.length; i += chunkSize) {
+      var chunk = items.slice(i, i + chunkSize);
+      var chunkResults = await Promise.all(chunk.map(async function(item) {
+        var inat = await getINatData(item.name);
+        if (inat) {
+          if (inat.image_url) { item.image_url = inat.image_url; item.image_credit = inat.image_credit; }
+          if (inat.scientific_name) item.scientific_name = inat.scientific_name;
+          if (inat.taxon_id) { item.taxon_id = inat.taxon_id; item.taxon_slug = inat.taxon_slug; }
+        }
+        // FIX 3: Explicitly set danger_score to null if not found, so UI can distinguish unscored
+        var danger = lookup(DANGER_INDEX, item.name);
+        if (danger) {
+          item.danger_score = danger.score;
+          item.danger_label = danger.label;
+          item.danger_type = danger.type;
+          item.danger_duration = danger.duration;
+          item.danger_medical = danger.medical;
+        } else {
+          item.danger_score = null;
+        }
+        var pain = lookup(PAIN_INDEX, item.name);
+        if (pain) {
+          item.pain_score = pain.score;
+          item.pain_label = pain.label;
+        } else {
+          item.pain_score = null;
+        }
+        return item;
+      }));
+      results = results.concat(chunkResults);
+    }
+    return results;
+  }
+
   location = await resolveZip(location);
 
   var prompt = [
-    'You are a comprehensive regional hazard expert covering entomology, herpetology, botany, and marine biology.',
+    'You are a comprehensive regional hazard expert. Your job is to produce an EXHAUSTIVE list of every natural hazard present at a location.',
     'Location: ' + location + '. Month: ' + month + '.',
     '',
-    'Create a COMPLETE and EXHAUSTIVE list of every natural hazard a person might encounter at this location in ' + month + '.',
-    'Be thorough. Do not omit common hazards like mosquitoes just because they are well known.',
-    'Include ALL of the following categories that apply to this region and season:',
-    '- Biting insects: mosquitoes, gnats, no-see-ums, biting midges, deer flies, horse flies, black flies, sand flies, stable flies',
-    '- Stinging insects: wasps, yellow jackets, hornets, bees, fire ants, harvester ants',
-    '- Ticks: all species active in this region this time of year',
-    '- Arachnids: spiders (especially venomous), scorpions, chiggers, mites',
-    '- Venomous snakes: all species with range overlapping this location',
-    '- Dangerous reptiles: alligators, snapping turtles, gila monsters where applicable',
-    '- Stinging/toxic plants: poison ivy, poison oak, stinging nettle, wild parsnip, giant hogweed, hawthorn, cacti where applicable',
-    '- Marine hazards: jellyfish, stingrays, sea lice, fire coral, sea urchins, lionfish where applicable',
-    '- Stinging caterpillars: puss caterpillar, saddleback, io moth caterpillar where applicable',
-    '- Other: leeches, slugs, centipedes, millipedes, springtails, earwigs, bed bugs, fleas where applicable',
-    '- Any regionally specific hazards unique to this location',
+    'RULES:',
+    '- List EVERY hazard present at this location in ' + month + '. Do not filter or prioritize. Include everything.',
+    '- DO NOT skip common hazards like mosquitoes, gnats, ticks, poison ivy just because they are obvious.',
+    '- DO NOT limit the list. A thorough response will have 15-25 entries.',
+    '- For each category below, include ALL species/types that are present in this region this month.',
+    '',
+    'CATEGORIES TO COVER (include all that apply):',
+    'BITING INSECTS: mosquitoes, gnats, no-see-ums, biting midges, deer flies, horse flies, black flies, stable flies, sand flies, springtails',
+    'STINGING INSECTS: wasps, yellow jackets, hornets, paper wasps, bald-faced hornets, honey bees, bumble bees, carpenter bees, fire ants, harvester ants, cicada killers, mud daubers',
+    'TICKS: deer tick/black-legged tick, american dog tick, lone star tick, brown dog tick, gulf coast tick - include all with range in this area',
+    'ARACHNIDS: black widow, brown recluse, wolf spider, hobo spider, yellow sac spider, scorpions, chiggers, mites, scabies',
+    'VENOMOUS SNAKES: copperhead, cottonmouth, rattlesnakes (all species), coral snake - include all with range overlap',
+    'REPTILES: alligators, snapping turtles, gila monster - where applicable',
+    'STINGING/TOXIC PLANTS: poison ivy, poison oak, poison sumac, stinging nettle, wild parsnip, giant hogweed, cow parsnip, buffalo bur, hawthorn, manchineel, prickly plants',
+    'STINGING CATERPILLARS: puss caterpillar, saddleback caterpillar, io moth caterpillar, hag moth caterpillar - where applicable',
+    'MARINE HAZARDS: jellyfish, portuguese man o war, stingrays, sea urchins, fire coral, lionfish, sea lice - where applicable',
+    'OTHER: centipedes, leeches, bed bugs, fleas, earwigs, millipedes, slugs, snapping turtles, feral pigs',
     '',
     'Return ONLY a raw JSON object, no markdown, no explanation.',
     '{',
@@ -506,17 +583,15 @@ export default async function handler(req, res) {
     '      "name": "Common name",',
     '      "category": "Biting Insect or Stinging Insect or Tick or Arachnid or Venomous Snake or Reptile or Stinging Plant or Toxic Plant or Marine Hazard or Other Hazard",',
     '      "severity": "High or Medium or Low",',
-    '      "description": "2-3 sentences about this hazard at this specific location this month.",',
-    '      "peak_timing": "When most active or prevalent this month",',
+    '      "description": "2-3 sentences specific to this location and month.",',
+    '      "peak_timing": "When most active this month",',
     '      "prevention_tips": ["tip 1", "tip 2", "tip 3"]',
     '    }',
     '  ]',
     '}',
     '',
-    'Include EVERY hazard that would realistically be encountered in ' + location + ' in ' + month + '.',
-    'A thorough response should have 10-20 entries covering all relevant categories.',
-    'Do not skip mosquitoes, ticks, or other common hazards even if they seem obvious.',
-    'ONLY output the JSON object.'
+    'severity rules: High = genuine medical risk or very common encounter. Medium = moderate nuisance or occasional medical risk. Low = minor nuisance, rare encounter.',
+    'Include ALL hazards present. 15-25 entries expected. ONLY output the JSON.'
   ].join('\n');
 
   try {
@@ -529,7 +604,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 4000,
+        max_tokens: 8000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -552,28 +627,7 @@ export default async function handler(req, res) {
     }
 
     var items = result.pests || result.hazards || [];
-    result.pests = await Promise.all(items.map(async function(item) {
-      var inat = await getINatData(item.name);
-      if (inat) {
-        if (inat.image_url) { item.image_url = inat.image_url; item.image_credit = inat.image_credit; }
-        if (inat.scientific_name) item.scientific_name = inat.scientific_name;
-        if (inat.taxon_id) { item.taxon_id = inat.taxon_id; item.taxon_slug = inat.taxon_slug; }
-      }
-      var danger = lookup(DANGER_INDEX, item.name);
-      if (danger) {
-        item.danger_score = danger.score;
-        item.danger_label = danger.label;
-        item.danger_type = danger.type;
-        item.danger_duration = danger.duration;
-        item.danger_medical = danger.medical;
-      }
-      var pain = lookup(PAIN_INDEX, item.name);
-      if (pain) {
-        item.pain_score = pain.score;
-        item.pain_label = pain.label;
-      }
-      return item;
-    }));
+    result.pests = await batchInatLookups(items);
     delete result.hazards;
 
     return res.status(200).json(result);
