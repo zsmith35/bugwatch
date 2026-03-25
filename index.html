@@ -50,10 +50,8 @@ select option{background:var(--surf)}
 .alert-bar.on{display:flex}
 .a-ttl{font-weight:600;color:var(--acc2);font-size:14px;margin-bottom:4px}
 .a-txt{color:var(--mu);font-size:13px;line-height:1.5}
-
-/* Section dividers */
-.threat-section{margin-bottom:40px}
-.threat-header{display:flex;align-items:center;gap:0;margin-bottom:24px}
+.threat-section{margin-bottom:48px}
+.threat-header{display:flex;align-items:center;margin-bottom:24px}
 .threat-line{flex:1;height:2px}
 .threat-label{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:900;letter-spacing:2px;padding:8px 20px;white-space:nowrap;border-top:2px solid;border-bottom:2px solid}
 .threat-high .threat-line{background:var(--dan)}
@@ -62,37 +60,25 @@ select option{background:var(--surf)}
 .threat-medium .threat-label{color:var(--war);border-color:var(--war);background:rgba(255,165,2,.06)}
 .threat-low .threat-line{background:var(--saf)}
 .threat-low .threat-label{color:var(--saf);border-color:var(--saf);background:rgba(46,213,115,.06)}
-
-/* Card grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.pc{background:var(--surf);border:1px solid var(--bor);border-radius:16px;overflow:hidden;opacity:0;transform:translateY(12px);animation:ci .35s ease forwards}
+.pc{background:var(--surf);border:1px solid var(--bor);border-radius:16px;overflow:hidden;opacity:0;transform:translateY(12px);animation:ci .35s ease forwards;transition:border-color .2s,box-shadow .2s}
 .pc:hover{border-color:rgba(212,255,0,.15);box-shadow:0 8px 32px rgba(0,0,0,.3)}
 @keyframes ci{to{opacity:1;transform:translateY(0)}}
-
-/* Card image */
-.pc-img-wrap{width:100%;aspect-ratio:16/9;overflow:hidden;background:#1c2330;position:relative}
+.pc-img-wrap{width:100%;aspect-ratio:16/9;overflow:hidden;background:#1c2330}
 .pc-img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.9) contrast(1.05)}
 .pc-no-img{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#161b22,#1c2330);display:flex;align-items:center;justify-content:center;font-size:44px}
-
-/* Card body */
 .pc-body{padding:18px}
 .pc-name{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;line-height:1.3;margin-bottom:4px}
 .pc-sci{font-size:11px;color:var(--mu);font-style:italic;margin-bottom:4px;opacity:.75}
-.pc-cat{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
-
-/* Pain index compact */
+.pc-cat{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
 .pain-row{display:inline-flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:4px 10px;margin-bottom:12px}
 .pain-lbl{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--mu)}
 .pain-val{font-size:11px;font-weight:700}
 .pain-desc{font-size:11px;color:var(--mu)}
-
 .pc-desc{font-size:13px;color:var(--mu);line-height:1.65;margin-bottom:12px}
-
-/* Meta tags */
 .meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .meta-tag{font-size:11px;color:var(--mu);background:var(--bg);padding:3px 9px;border-radius:7px;border:1px solid var(--bor)}
 .meta-med{font-size:11px;color:var(--dan);background:rgba(255,71,87,.08);padding:3px 9px;border-radius:7px;border:1px solid rgba(255,71,87,.25);font-weight:500}
-
 .stl{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);margin-bottom:8px}
 .tips{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
 .tips li{font-size:13px;color:var(--mu);padding-left:14px;position:relative;line-height:1.5}
@@ -101,7 +87,6 @@ select option{background:var(--surf)}
 .map-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(212,255,0,.06);border:1px solid rgba(212,255,0,.18);color:var(--acc);font-size:11px;padding:4px 10px;border-radius:16px;font-weight:500;text-decoration:none;margin-top:8px;transition:background .2s}
 .map-btn:hover{background:rgba(212,255,0,.14)}
 .credit{font-size:10px;color:var(--mu);opacity:.35;margin-top:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
 footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:var(--mu);font-size:13px;line-height:1.6}
 </style>
 </head>
@@ -171,7 +156,7 @@ footer{border-top:1px solid var(--bor);padding:32px 0;text-align:center;color:va
   <div id="sections"></div>
 </div>
 
-<footer>StingScene uses AI to aggregate regional hazard data. Results are informational — always consult local advisories.<br><span style="opacity:.4;font-size:12px">Powered by Claude &middot; Photos &amp; data via iNaturalist &middot; Early Preview</span></footer>
+<footer>StingScene uses AI to aggregate regional hazard data. Results are informational &mdash; always consult local advisories.<br><span style="opacity:.4;font-size:12px">Powered by Claude &middot; Photos &amp; data via iNaturalist &middot; Early Preview</span></footer>
 </div>
 
 <script>
@@ -193,66 +178,84 @@ async function go(){
   if(!loc){
     var el=document.getElementById('loc');
     el.style.borderColor='#ff4757';el.focus();
-    setTimeout(function(){el.style.borderColor=''},2000);return;
+    setTimeout(function(){el.style.borderColor=''},2000);
+    return;
   }
+
   hide('res');hide('err');show('spin');
   document.getElementById('spin').querySelector('.spin-txt').textContent='Scanning regional hazards...';
   document.getElementById('btn').disabled=true;
 
-  // FIX 10: Show progress feedback after 5s
-  var slowTimer = setTimeout(function(){
-    var el = document.getElementById('spin').querySelector('.spin-txt');
+  // FIX 10: Progress feedback after 5s
+  var slowTimer=setTimeout(function(){
+    var el=document.getElementById('spin').querySelector('.spin-txt');
     if(el) el.textContent='Still working — fetching photos from iNaturalist...';
-  }, 5000);
+  },5000);
 
   try{
-    var resp=await fetch('/api/pest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:loc,month:mon})});
+    var resp=await fetch('/api/pest',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({location:loc,month:mon})
+    });
     var raw=await resp.text();
-    if(!resp.ok){var ed;try{ed=JSON.parse(raw)}catch(e){ed={error:raw}}throw new Error('Error '+resp.status+': '+String(ed.error||raw).slice(0,200));}
-    var result;try{result=JSON.parse(raw)}catch(e){throw new Error('Parse error: '+raw.slice(0,200))}
+    if(!resp.ok){
+      var ed;
+      try{ed=JSON.parse(raw)}catch(e){ed={error:raw}}
+      throw new Error('Error '+resp.status+': '+String(ed.error||raw).slice(0,200));
+    }
+    var result;
+    try{result=JSON.parse(raw)}catch(e){throw new Error('Parse error: '+raw.slice(0,200))}
     render(result);
   }catch(e){
     hide('spin');show('err');
-    if(slowTimer) clearTimeout(slowTimer);
     document.getElementById('errtxt').textContent=e.message||String(e);
-    var d=document.getElementById('dbg');d.style.display='block';d.textContent=e.message||String(e);
+    var d=document.getElementById('dbg');
+    d.style.display='block';
+    d.textContent=e.message||String(e);
   }finally{
-    if(slowTimer) clearTimeout(slowTimer);
+    clearTimeout(slowTimer);
     document.getElementById('btn').disabled=false;
   }
 }
 
-function buildCard(p, delay){
-  var sev = p.severity||'Medium';
+function buildCard(p,idx){
+  // FIX 7: Guard pain color against null/undefined
+  var pc='#7d8590';
+  if(p.pain_score!==null && p.pain_score!==undefined){
+    pc=p.pain_score<=2?'#2ed573':p.pain_score<=4?'#ffa502':p.pain_score<=6?'#ff6b35':p.pain_score<=8?'#ff4757':'#ff2222';
+  }
 
-  // Pain color
-  var pc = (!p.pain_score||p.pain_score===null)?'#7d8590':p.pain_score<=2?'#2ed573':p.pain_score<=4?'#ffa502':p.pain_score<=6?'#ff6b35':p.pain_score<=8?'#ff4757':'#ff2222';
+  var imgHtml=p.image_url
+    ?'<div class="pc-img-wrap"><img class="pc-img" src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'" loading="lazy"></div>'
+    :'<div class="pc-no-img">&#x1F41B;</div>';
 
-  var imgHtml = p.image_url
-    ? '<div class="pc-img-wrap"><img class="pc-img" src="'+esc(p.image_url)+'" alt="'+esc(p.name)+'" loading="lazy"></div>'
-    : '<div class="pc-no-img">&#x1F41B;</div>';
+  var sciHtml=p.scientific_name?'<div class="pc-sci">'+esc(p.scientific_name)+'</div>':'';
 
-  var sciHtml = p.scientific_name ? '<div class="pc-sci">'+esc(p.scientific_name)+'</div>' : '';
+  // FIX 7: Only show pain row when score is actually present
+  var painHtml='';
+  if(p.pain_score!==null && p.pain_score!==undefined){
+    painHtml='<div class="pain-row"><span class="pain-lbl">Pain</span><span class="pain-val" style="color:'+pc+'">'+p.pain_score+'/10</span><span class="pain-desc">'+esc(p.pain_label||'')+'</span></div>';
+  }
 
-  var painHtml = (p.pain_score !== null && p.pain_score !== undefined)
-    ? '<div class="pain-row"><span class="pain-lbl">Pain</span><span class="pain-val" style="color:'+pc+'">'+p.pain_score+'/10</span><span class="pain-desc">'+esc(p.pain_label||'')+'</span></div>'
-    : '';
+  var metaHtml='<div class="meta-row">';
+  if(p.danger_type) metaHtml+='<span class="meta-tag">'+esc(p.danger_type)+'</span>';
+  if(p.danger_duration) metaHtml+='<span class="meta-tag">'+esc(p.danger_duration)+'</span>';
+  if(p.danger_medical) metaHtml+='<span class="meta-med">&#x26A0; Seek medical attention</span>';
+  metaHtml+='</div>';
 
-  var metaHtml = '<div class="meta-row">';
-  if(p.danger_type) metaHtml += '<span class="meta-tag">'+esc(p.danger_type)+'</span>';
-  if(p.danger_duration) metaHtml += '<span class="meta-tag">'+esc(p.danger_duration)+'</span>';
-  if(p.danger_medical) metaHtml += '<span class="meta-med">&#x26A0; Seek medical attention</span>';
-  metaHtml += '</div>';
+  var tips='';
+  if(p.prevention_tips){
+    for(var j=0;j<p.prevention_tips.length;j++){tips+='<li>'+esc(p.prevention_tips[j])+'</li>';}
+  }
 
-  var tips = '';
-  if(p.prevention_tips){for(var j=0;j<p.prevention_tips.length;j++){tips+='<li>'+esc(p.prevention_tips[j])+'</li>';}}
+  var creditHtml=p.image_credit?'<div class="credit">'+esc(p.image_credit)+'</div>':'';
 
-  var creditHtml = p.image_credit ? '<div class="credit">'+esc(p.image_credit)+'</div>' : '';
-
-  var card = document.createElement('div');
-  card.className = 'pc';
-  card.style.animationDelay = (Math.min(delay, 6)*0.06)+'s';
-  card.innerHTML =
+  // FIX 9: Animation delay capped and resets per section (idx passed per-section)
+  var card=document.createElement('div');
+  card.className='pc';
+  card.style.animationDelay=(Math.min(idx,6)*0.06)+'s';
+  card.innerHTML=
     imgHtml+
     '<div class="pc-body">'+
       '<div class="pc-name">'+esc(p.name||'')+'</div>'+
@@ -273,49 +276,59 @@ function buildCard(p, delay){
 
 function render(d){
   hide('spin');
-  document.getElementById('rloc').textContent = d.location_display||'Results';
-  var ac = d.activity_level==='High'?'#ff4757':d.activity_level==='Moderate'?'#ffa502':'#2ed573';
-  document.getElementById('rmeta').innerHTML =
+  document.getElementById('rloc').textContent=d.location_display||'Results';
+  var ac=d.activity_level==='High'?'#ff4757':d.activity_level==='Moderate'?'#ffa502':'#2ed573';
+  document.getElementById('rmeta').innerHTML=
     '<span>&#x1F4C5; '+esc(d.month||'')+'</span>'+
     '<span>&#x26A0; '+(d.pests?d.pests.length:0)+' hazards identified</span>'+
     '<span style="color:'+ac+'">&#x25CF; '+esc(d.activity_level||'')+' Season</span>';
 
   var abar=document.getElementById('abar');
-  if(d.alert&&d.alert.active){document.getElementById('attl').textContent=d.alert.title||'';document.getElementById('atxt').textContent=d.alert.text||'';abar.classList.add('on');}
-  else{abar.classList.remove('on');}
+  if(d.alert&&d.alert.active){
+    document.getElementById('attl').textContent=d.alert.title||'';
+    document.getElementById('atxt').textContent=d.alert.text||'';
+    abar.classList.add('on');
+  }else{abar.classList.remove('on');}
 
-  var sections = document.getElementById('sections');
-  sections.innerHTML = '';
+  var sections=document.getElementById('sections');
+  sections.innerHTML='';
 
-  var LEVELS = [
-    { key:'high',   label:'THREAT LEVEL: HIGH',   cls:'threat-high',   min:6, max:10 },
-    { key:'medium', label:'THREAT LEVEL: MEDIUM',  cls:'threat-medium', min:3, max:5  },
-    { key:'low',    label:'THREAT LEVEL: LOW',     cls:'threat-low',    min:0, max:2  }
+  var LEVELS=[
+    {label:'THREAT LEVEL: HIGH',   cls:'threat-high',   min:6, max:10},
+    {label:'THREAT LEVEL: MEDIUM', cls:'threat-medium', min:3, max:5 },
+    {label:'THREAT LEVEL: LOW',    cls:'threat-low',    min:0, max:2 }
   ];
 
-  var pests = (d.pests||[]).slice().sort(function(a,b){return(b.danger_score||0)-(a.danger_score||0);});
-  var cardIndex = 0;
+  // Sort all pests by danger_score descending
+  var pests=(d.pests||[]).slice().sort(function(a,b){
+    return (b.danger_score||0)-(a.danger_score||0);
+  });
 
   for(var li=0;li<LEVELS.length;li++){
-    var level = LEVELS[li];
-    var group = pests.filter(function(p){
-      var s = p.danger_score !== undefined ? p.danger_score : 0;
-      return s >= level.min && s <= level.max;
+    var level=LEVELS[li];
+    // FIX 3: null danger_score items (score===null) go to Low section (treated as 0)
+    var group=pests.filter(function(p){
+      var s=(p.danger_score===null||p.danger_score===undefined)?0:p.danger_score;
+      return s>=level.min && s<=level.max;
     });
     if(group.length===0) continue;
 
-    var section = document.createElement('div');
-    section.className = 'threat-section';
+    var section=document.createElement('div');
+    section.className='threat-section';
 
-    var header = document.createElement('div');
-    header.className = 'threat-header '+level.cls;
-    header.innerHTML = '<div class="threat-line"></div><div class="threat-label">'+level.label+'</div><div class="threat-line"></div>';
+    var header=document.createElement('div');
+    header.className='threat-header '+level.cls;
+    header.innerHTML=
+      '<div class="threat-line"></div>'+
+      '<div class="threat-label">'+level.label+'</div>'+
+      '<div class="threat-line"></div>';
     section.appendChild(header);
 
-    var grid = document.createElement('div');
-    grid.className = 'grid';
+    var grid=document.createElement('div');
+    grid.className='grid';
+    // FIX 9: Pass section index (gi) not global index so delay resets per section
     for(var gi=0;gi<group.length;gi++){
-      grid.appendChild(buildCard(group[gi], gi));  // reset index per section
+      grid.appendChild(buildCard(group[gi],gi));
     }
     section.appendChild(grid);
     sections.appendChild(section);
@@ -324,7 +337,9 @@ function render(d){
   show('res');
 }
 
-document.getElementById('loc').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+document.getElementById('loc').addEventListener('keydown',function(e){
+  if(e.key==='Enter') go();
+});
 </script>
 </body>
 </html>
